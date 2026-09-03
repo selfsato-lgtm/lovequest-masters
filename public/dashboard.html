@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>LOVEQUEST MASTERS | RPGダッシュボード</title>
+<link rel="icon" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<style>
+:root{
+  --bg:#0D0D1A; --card:#1A1A35; --card2:#12122A;
+  --gold:#F5A623; --red:#E94560; --blue:#4A9EDB;
+  --green:#4CAF73; --purple:#7B5EA7;
+  --white:#FFFFFF; --light:#E0E0E0; --muted:#8888AA;
+  --se:#E94560; --od:#F5A623; --so:#4CAF73; --ma:#4A9EDB;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Yu Gothic UI','Hiragino Sans','Meiryo',sans-serif;
+  background:var(--bg);color:var(--light);min-height:100vh;overflow-x:hidden}
+
+.portal-back{flex-shrink:0;display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.06);
+  border:1px solid #3a3a5a;border-radius:20px;padding:7px 14px;
+  font-size:11.5px;color:var(--light);text-decoration:none}
+.portal-back:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ─── MODAL ─── */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+#modal h2{color:var(--gold);font-size:22px;margin-bottom:4px;text-align:center}
+#modal p{color:var(--muted);font-size:13px;margin-bottom:18px;text-align:center}
+.av-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:560px;width:100%}
+.av-card{background:var(--card);border:1.5px solid #333;border-radius:10px;
+  padding:10px 6px;text-align:center;cursor:pointer;transition:.15s}
+.av-card:hover{transform:translateY(-3px);border-color:var(--gold)}
+.av-card .av-icon{display:block;margin:0 auto;width:38px;height:38px;object-fit:contain;border-radius:8px}
+.av-card .av-icon.icon-fallback{font-size:28px;line-height:1.1;width:auto;height:auto}
+.av-card .av-name{font-size:11px;font-weight:700;margin-top:5px;color:var(--white)}
+.av-card.se{border-color:#333} .av-card.se:hover{border-color:var(--se)}
+.av-card.od{border-color:#333} .av-card.od:hover{border-color:var(--od)}
+.av-card.so{border-color:#333} .av-card.so:hover{border-color:var(--so)}
+.av-card.ma{border-color:#333} .av-card.ma:hover{border-color:var(--ma)}
+
+/* ─── HEADER ─── */
+header{background:linear-gradient(135deg,#0D0D1A 0%,#1A0D2E 100%);
+  border-bottom:1px solid #2a2a4a;padding:10px 16px;
+  display:flex;align-items:center}
+.hdr-side{flex:1;display:flex;align-items:center;gap:8px}
+.hdr-side.right{justify-content:flex-end}
+.logo{flex-shrink:0;font-size:18px;font-weight:900;letter-spacing:2px;color:var(--gold);white-space:nowrap}
+.logo span{color:var(--white)}
+.hdr-right{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end}
+.reset-btn,.save-btn,.load-btn{flex-shrink:0;white-space:nowrap;font-size:11px;
+  padding:5px 10px;border-radius:8px;background:transparent;cursor:pointer;
+  min-width:84px;text-align:center}
+.reset-btn{border:1px solid #444;color:var(--muted)}
+.reset-btn:hover{background:#333;color:var(--white)}
+.save-btn{border:1px solid var(--gold);color:var(--gold)}
+.save-btn:hover{background:var(--gold);color:var(--bg)}
+.load-btn{border:1px solid var(--blue);color:var(--blue)}
+.load-btn:hover{background:var(--blue);color:var(--white)}
+
+/* ─── LAYOUT ─── */
+main{display:grid;grid-template-columns:180px 1fr 280px;gap:12px;
+  padding:12px;max-width:1100px;margin:0 auto}
+.left-col{display:flex;flex-direction:column;gap:12px;width:100%;max-width:180px}
+.left-col > .panel{width:100%;box-sizing:border-box}
+@media(max-width:860px){main{grid-template-columns:1fr 1fr}
+  #quest-panel{grid-column:1/-1}}
+@media(max-width:540px){main{grid-template-columns:1fr}
+  #quest-panel{grid-column:auto}
+  .left-col{max-width:none;margin:0}}
+@media(max-width:600px){
+  .portal-back{padding:6px 10px;font-size:10px}
+  .portal-back .pb-txt{display:none}
+}
+
+/* ─── PANEL ─── */
+.panel{background:var(--card);border:1px solid #2a2a4a;border-radius:14px;
+  padding:14px;align-self:start}
+
+/* ─── AVATAR PANEL ─── */
+#avatar-panel{text-align:center}
+.av-display{width:88px;height:88px;object-fit:contain;border-radius:14px;margin:8px auto;display:block}
+.av-display.icon-fallback{font-size:62px;line-height:1;width:auto;height:auto}
+.av-title{font-size:16px;font-weight:900;color:var(--gold)}
+.av-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.change-btn{font-size:11px;padding:4px 10px;border-radius:8px;margin-top:8px;
+  border:1px solid #444;background:transparent;color:var(--muted);cursor:pointer}
+.change-btn:hover{border-color:var(--gold);color:var(--gold)}
+.overall-box{margin-top:12px;background:var(--card2);border-radius:10px;padding:10px 12px;
+  border:1px solid #2a2a4a}
+.overall-lbl{font-size:11px;color:var(--muted);text-align:left}
+.overall-lv{font-size:28px;font-weight:900;color:var(--gold);text-align:left;line-height:1.1}
+.overall-title{font-size:12px;color:var(--muted);text-align:left;margin-bottom:6px}
+.xp-bar-bg{height:8px;background:#2a2a4a;border-radius:4px;overflow:hidden;margin-top:6px}
+.xp-bar-fill{height:100%;border-radius:4px;background:var(--purple);transition:width .5s ease}
+.xp-txt{font-size:10px;color:var(--muted);margin-top:3px;text-align:right}
+
+/* ─── COMMAND PANEL（RPGのコマンドウィンドウ風） ─── */
+#command-panel h3{font-size:13px;font-weight:700;color:var(--white);margin-bottom:10px}
+.cmd-item{display:flex;align-items:center;gap:8px;padding:10px 12px;margin-bottom:6px;
+  border:1.5px solid #3a3a5a;border-radius:8px;background:var(--card2);
+  text-decoration:none;color:var(--light);cursor:pointer;transition:.12s}
+.cmd-item:hover{border-color:var(--gold);background:#1e1e40}
+.cmd-item:hover .cmd-arrow{color:var(--gold);transform:translateX(2px)}
+.cmd-arrow{color:var(--muted);font-size:11px;flex-shrink:0;transition:.12s}
+.cmd-text{font-size:12.5px;font-weight:700;color:var(--white)}
+.cmd-sub{display:block;font-size:10px;font-weight:400;color:var(--muted);margin-top:2px}
+.cmd-item-disabled{cursor:default;opacity:.55}
+.cmd-item-disabled:hover{border-color:#3a3a5a;background:var(--card2)}
+.cmd-item-disabled:hover .cmd-arrow{color:var(--muted);transform:none}
+
+/* ─── STATS ─── */
+#stats-panel h3{font-size:13px;font-weight:700;color:var(--white);margin-bottom:12px}
+.stat-row{margin-bottom:14px}
+.stat-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.stat-name{font-size:12.5px;color:var(--light)}
+.stat-lv{font-size:12px;font-weight:700}
+.stat-bar-bg{height:12px;background:#2a2a4a;border-radius:6px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:6px;transition:width .5s ease}
+.stat-adj{display:flex;gap:4px;margin-top:5px;justify-content:flex-end}
+.adj-btn{font-size:10px;padding:2px 7px;border-radius:5px;border:1px solid #444;
+  background:transparent;color:var(--muted);cursor:pointer;transition:.1s}
+.adj-btn:hover{background:#333;color:var(--white)}
+.adj-btn-mini{font-size:9px;padding:0 4px;margin:0 2px}
+.xp-adj{flex-direction:column;align-items:flex-end;gap:2px}
+.stat-desc{font-size:10px;color:var(--muted);margin-top:2px}
+
+.radar-wrap{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.analysis-row{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #2a2a4a}
+.radar-svg{width:100%;height:auto;display:block;max-width:320px;margin:0 auto}
+.radar-legend{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.radar-legend-row{display:flex;align-items:center;gap:8px}
+.radar-legend-row .stat-name{flex:1}
+.radar-legend-row .stat-adj{margin-top:0;display:flex;align-items:center;gap:6px}
+.derived-note{font-size:10px;color:var(--muted);font-style:italic}
+.impass-count{font-size:10px;color:var(--muted)}
+.stats-sub-heading{font-size:11px;color:var(--muted);font-weight:700;margin:16px 0 10px;letter-spacing:.5px}
+.manual-list{display:flex;flex-direction:column;gap:6px}
+.manual-row{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--light);
+  padding:6px 8px;border-radius:8px;border:1px solid #2a2a4a;background:var(--card2);cursor:pointer}
+.manual-row.done{border-color:var(--green);color:var(--green)}
+.manual-row input{flex-shrink:0}
+.manual-name{flex:1}
+.manual-target{font-size:10px;color:var(--muted)}
+.manual-row.done .manual-target{color:var(--green)}
+
+/* ─── QUESTS ─── */
+#quest-panel h3{font-size:13px;font-weight:700;color:var(--white);margin-bottom:10px}
+.q-item{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;
+  border-radius:9px;margin-bottom:6px;cursor:pointer;
+  border:1px solid #2a2a4a;background:var(--card2);transition:.15s}
+.q-item:hover{border-color:#444}
+.q-item.done{background:#0D1F0D;border-color:var(--green)}
+.q-icon{font-size:18px;line-height:1;flex-shrink:0;margin-top:1px}
+.q-body{flex:1;min-width:0}
+.q-name{font-size:12.5px;font-weight:700;color:var(--light)}
+.q-item.done .q-name{color:var(--green)}
+.q-desc{font-size:10.5px;color:var(--muted);margin-top:2px}
+.q-reward{font-size:10px;color:#888;margin-top:3px}
+.q-check{font-size:18px;flex-shrink:0;margin-top:1px}
+.q-item.done .q-check::before{content:'✅'}
+.q-item:not(.done) .q-check::before{content:'⬜'}
+
+/* ─── DATE LOG ─── */
+.datelog-wrap{max-width:1100px;margin:0 auto;padding:0 12px 24px}
+.datelog-panel{padding:0;overflow:hidden}
+.datelog-header{display:flex;align-items:center;justify-content:space-between;
+  padding:14px;cursor:pointer;user-select:none}
+.datelog-header h3{font-size:13px;font-weight:700;color:var(--white)}
+.datelog-toggle{color:var(--muted);font-size:12px;transition:transform .2s}
+.datelog-toggle.closed{transform:rotate(-90deg)}
+.datelog-body{padding:0 14px 14px;border-top:1px solid #2a2a4a}
+.datelog-body.closed{display:none}
+.dl-mybirth{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 12px;
+  background:var(--card2);border:1px solid var(--gold);border-radius:10px}
+.dl-mybirth label{font-size:11.5px;color:var(--gold);font-weight:700;white-space:nowrap}
+.dl-mybirth input{background:var(--card);border:1px solid #2a2a4a;border-radius:8px;
+  padding:6px 9px;font-size:12px;color:var(--light);font-family:inherit}
+.datelog-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;margin-top:14px}
+.dl-stepper{display:flex;align-items:center;gap:8px}
+.dl-step-btn{flex-shrink:0;width:28px;height:28px;border-radius:6px;border:1px solid #2a2a4a;
+  background:var(--card2);color:var(--gold);font-size:14px;font-weight:900;cursor:pointer;line-height:1}
+.dl-step-btn:hover{border-color:var(--gold)}
+#dl-cost{width:90px;text-align:center;flex-shrink:0}
+.dl-cost-unit{font-size:12px;color:var(--muted)}
+.dl-age-diff{font-size:10.5px;color:var(--gold);min-height:14px}
+.dl-field{display:flex;flex-direction:column;gap:4px}
+.dl-field-wide{grid-column:1/-1}
+.dl-field label{font-size:10.5px;color:var(--muted)}
+.dl-field input,.dl-field select,.dl-field textarea{background:var(--card2);
+  border:1px solid #2a2a4a;border-radius:8px;padding:7px 9px;font-size:12px;
+  color:var(--light);font-family:inherit}
+.dl-field textarea{min-height:52px;resize:vertical}
+.dl-field input:focus,.dl-field select:focus,.dl-field textarea:focus{outline:none;border-color:var(--gold)}
+.dl-add-btn{grid-column:1/-1;font-size:12.5px;padding:9px;border-radius:10px;
+  border:none;background:var(--gold);color:var(--bg);font-weight:900;cursor:pointer;margin-top:4px}
+.dl-add-btn:hover{filter:brightness(1.08)}
+.dl-summary{margin-top:16px;padding:10px 12px;background:var(--card2);border:1px solid #2a2a4a;
+  border-radius:10px;font-size:11.5px;color:var(--light);line-height:1.8}
+.dl-summary b{color:var(--gold)}
+.dl-table-wrap{margin-top:14px;overflow-x:auto}
+.dl-table{border-collapse:collapse;width:100%;font-size:11px}
+.dl-table th,.dl-table td{border:1px solid #2a2a4a;padding:6px 8px;text-align:left;
+  white-space:nowrap;color:var(--light)}
+.dl-table th{background:var(--card2);color:var(--muted);position:sticky;top:0}
+.dl-table td[contenteditable="true"]{cursor:text;min-width:60px;max-width:220px;
+  white-space:normal;overflow-wrap:break-word}
+.dl-table td[contenteditable="true"]:focus{outline:1px solid var(--gold);background:var(--card2)}
+.dl-table td.dl-readonly{color:var(--muted);cursor:default}
+.dl-del-btn{background:transparent;border:1px solid var(--red);color:var(--red);
+  border-radius:6px;padding:3px 8px;font-size:10.5px;cursor:pointer}
+.dl-del-btn:hover{background:var(--red);color:var(--white)}
+.dl-empty{padding:16px;text-align:center;color:var(--muted);font-size:11.5px}
+
+/* ─── TOAST ─── */
+#toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.8);
+  background:linear-gradient(135deg,#1A0D35,#2A1A55);
+  border:2px solid var(--gold);border-radius:16px;padding:28px 40px;
+  text-align:center;z-index:200;opacity:0;pointer-events:none;transition:.3s}
+#toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#toast .t-icon{font-size:48px}
+#toast .t-title{font-size:22px;font-weight:900;color:var(--gold);margin:8px 0 4px}
+#toast .t-sub{font-size:14px;color:var(--light)}
+</style>
+</head>
+<body>
+
+<!-- Avatar Selection Modal -->
+<div id="modal">
+  <h2>⚔️ アバターを選択してください</h2>
+  <p>あなたの恋愛スタイルに近いキャラクターを選んで冒険を始めましょう</p>
+  <div class="av-grid" id="av-grid"></div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="hdr-side left"><a class="portal-back" href="index.html">← <span class="pb-txt">ポータルへ戻る</span></a></div>
+  <div class="logo">LOVE<span>QUEST</span> <span style="font-size:12px;color:var(--muted)">MASTERS</span></div>
+  <div class="hdr-side right">
+    <div class="hdr-right">
+      <button class="save-btn" onclick="saveBookFile()">📖 冒険の書を保存</button>
+      <button class="load-btn" onclick="document.getElementById('bookFileInput').click()">📂 読込</button>
+      <input type="file" id="bookFileInput" accept=".md,text/markdown" style="display:none" onchange="loadBookFile(this.files[0])">
+      <button class="reset-btn" onclick="resetAll()">🔄 リセット</button>
+      <button class="reset-btn" id="reloadBtn">🔄 RELOAD</button>
+    </div>
+  </div>
+</header>
+
+<!-- Main -->
+<main>
+  <!-- Left Column: Avatar + Command -->
+  <div class="left-col">
+    <div class="panel" id="avatar-panel">
+      <div class="av-display" id="av-icon">🧙</div>
+      <div class="av-title" id="av-name">魔法戦士</div>
+      <div class="av-sub" id="av-sub">戦士 × 魔法使い</div>
+      <button class="change-btn" onclick="openModal()">✏️ 変更</button>
+      <div class="overall-box">
+        <div class="overall-lbl">総合レベル</div>
+        <div class="overall-lv" id="ov-lv">Lv.1</div>
+        <div class="overall-title" id="ov-rank">見習い冒険者</div>
+        <div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-bar" style="width:0%"></div></div>
+        <div class="xp-txt" id="xp-txt">0 / 100 XP</div>
+      </div>
+    </div>
+
+    <!-- Command Panel -->
+    <div class="panel" id="command-panel">
+      <h3>⚔️ コマンド</h3>
+      <a class="cmd-item" href="https://gitmind.com/jp/" target="_blank" rel="noopener" onclick="useMindmap()">
+        <span class="cmd-arrow">▶</span>
+        <span class="cmd-text">マインドマップ<span class="cmd-sub">（事前準備、相手の記録）</span></span>
+      </a>
+      <div class="cmd-item" onclick="document.getElementById('datelog-panel').scrollIntoView({behavior:'smooth', block:'start'})">
+        <span class="cmd-arrow">▶</span>
+        <span class="cmd-text">デートログ<span class="cmd-sub">（事後振り返り、デートの記録）</span></span>
+      </div>
+      <a class="cmd-item" href="training.html">
+        <span class="cmd-arrow">▶</span>
+        <span class="cmd-text">トレーニング<span class="cmd-sub">（チェックリスト対応トレーニング教材）</span></span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats Panel -->
+  <div class="panel" id="stats-panel">
+    <h3>📊 ステータス</h3>
+    <div id="stats-container"></div>
+  </div>
+
+  <!-- Quest Panel -->
+  <div class="panel" id="quest-panel">
+    <h3>⚔️ クエスト <span id="q-count" style="font-size:11px;color:var(--muted);font-weight:400"></span></h3>
+    <div id="quest-container"></div>
+  </div>
+</main>
+
+<!-- Date Log Section -->
+<div class="datelog-wrap">
+  <div class="panel datelog-panel" id="datelog-panel">
+    <div class="datelog-header" onclick="toggleDateLogAccordion()">
+      <h3>📔 デートログ</h3>
+      <span class="datelog-toggle" id="datelog-toggle-icon">▼</span>
+    </div>
+    <div class="datelog-body" id="datelog-body">
+
+      <div class="dl-mybirth">
+        <label>🎂 MyBirth（自分の生年月日）</label>
+        <input type="date" id="dl-mybirth" onchange="onMyBirthChange()">
+      </div>
+
+      <form class="datelog-form" id="datelog-form" onsubmit="return false;">
+        <div class="dl-field"><label>デート日時</label>
+          <input type="datetime-local" id="dl-datetime"></div>
+        <div class="dl-field"><label>お相手のお名前</label>
+          <input type="text" id="dl-name" placeholder="例: ○○さん"></div>
+        <div class="dl-field"><label>出会ったきっかけ</label>
+          <select id="dl-tool" onchange="onDlToolChange()">
+            <option value="">選択してください</option>
+            <option value="合コン">合コン</option>
+            <option value="パーティ">パーティ</option>
+            <option value="知人・友人繋がり">知人・友人繋がり</option>
+            <option value="職場・趣味等のコミュニティ">職場・趣味等のコミュニティ</option>
+            <option value="マッチングアプリ(pairs)">マッチングアプリ(pairs)</option>
+            <option value="マッチングアプリ(with)">マッチングアプリ(with)</option>
+            <option value="マッチングアプリ(omiai)">マッチングアプリ(omiai)</option>
+            <option value="マッチングアプリ(IBJ)">マッチングアプリ(IBJ)</option>
+            <option value="マッチングアプリ(東カレ)">マッチングアプリ(東カレ)</option>
+            <option value="マッチングアプリ(バチェラー)">マッチングアプリ(バチェラー)</option>
+            <option value="マッチングアプリ(その他)">マッチングアプリ(その他)</option>
+            <option value="その他">その他</option>
+          </select></div>
+        <div class="dl-field" id="dl-tool-other-wrap" style="display:none"><label>出会ったきっかけ（その他・詳細）</label>
+          <input type="text" id="dl-tool-other" placeholder="具体的に入力してください"></div>
+        <div class="dl-field"><label>服装</label>
+          <input type="text" id="dl-outfit" placeholder="例: きれいめカジュアル"></div>
+        <div class="dl-field"><label>お店の情報</label>
+          <input type="text" id="dl-shop" placeholder="例: オンラインのためなし／店名"></div>
+        <div class="dl-field"><label>デートで使用した合計金額</label>
+          <div class="dl-stepper">
+            <button type="button" class="dl-step-btn" onclick="adjDlCost(-1000)">－</button>
+            <input type="text" inputmode="numeric" id="dl-cost" value="0" oninput="onDlCostInput()">
+            <span class="dl-cost-unit">円</span>
+            <button type="button" class="dl-step-btn" onclick="adjDlCost(1000)">＋</button>
+          </div></div>
+        <div class="dl-field"><label>今回の女性とのデート回数</label>
+          <input type="number" id="dl-visitCount" min="1" placeholder="回目"></div>
+        <div class="dl-field"><label>お相手の年齢</label>
+          <input type="number" id="dl-age" placeholder="歳" oninput="updateAgeDiffPreview()">
+          <span class="dl-age-diff" id="dl-age-diff"></span></div>
+        <div class="dl-field"><label>お相手の職業</label>
+          <input type="text" id="dl-job"></div>
+        <div class="dl-field"><label>お相手の住まい</label>
+          <input type="text" id="dl-home"></div>
+        <div class="dl-field"><label>相手のタイプ</label>
+          <select id="dl-type"><option value="">未診断</option></select></div>
+        <div class="dl-field dl-field-wide"><label>今回の目標</label>
+          <textarea id="dl-goal"></textarea></div>
+        <div class="dl-field dl-field-wide"><label>会話の内容</label>
+          <textarea id="dl-talk"></textarea></div>
+        <div class="dl-field dl-field-wide"><label>今回のデートで少しでもうまくいったこと</label>
+          <textarea id="dl-good"></textarea></div>
+        <div class="dl-field dl-field-wide"><label>感想・次回に向けての改善点</label>
+          <textarea id="dl-review"></textarea></div>
+        <div class="dl-field dl-field-wide"><label>その後のやり取り/次回約束</label>
+          <textarea id="dl-followup"></textarea></div>
+        <button class="dl-add-btn" onclick="addDateLog()">＋ デートログを追加</button>
+      </form>
+
+      <div class="dl-summary" id="dl-summary"></div>
+
+      <div class="dl-table-wrap">
+        <table class="dl-table" id="dl-table">
+          <thead><tr>
+            <th>日時</th><th>名前</th><th>きっかけ</th><th>服装</th><th>お店</th><th>金額</th><th>回数</th>
+            <th>年齢</th><th>職業</th><th>住まい</th><th>タイプ</th>
+            <th>目標</th><th>会話</th><th>うまくいったこと</th><th>感想・改善点</th><th>その後のやり取り/次回約束</th><th></th>
+          </tr></thead>
+          <tbody id="dl-tbody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Level Up Toast -->
+<div id="toast">
+  <div class="t-icon">🌟</div>
+  <div class="t-title" id="toast-title">LEVEL UP!</div>
+  <div class="t-sub" id="toast-sub">Lv.2 に上がりました</div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────
+const AVATARS = [
+  {name:'狂戦士',icon:'⚔️',file:'kyousenshi',type:'se',sub:'戦士ド直球'},
+  {name:'勇者',  icon:'🦸',file:'yuusha',type:'se',sub:'戦士 × 踊り子'},
+  {name:'魔法戦士',icon:'🧙',file:'mahousenshi',type:'se',sub:'戦士 × 魔法使い'},
+  {name:'聖戦士',icon:'🛡️',file:'seisenshi',type:'se',sub:'戦士 × 僧侶'},
+  {name:'姫',   icon:'👸',file:'hime',type:'od',sub:'踊り子ド直球'},
+  {name:'騎士',  icon:'🏇',file:'kishi',type:'od',sub:'踊り子 × 戦士'},
+  {name:'盗賊',  icon:'🗡️',file:'touzoku',type:'od',sub:'踊り子 × 魔法使い'},
+  {name:'妖精',  icon:'🧚',file:'yousei',type:'od',sub:'踊り子 × 僧侶'},
+  {name:'シスター',icon:'🌿',file:'sister',type:'so',sub:'僧侶ド直球'},
+  {name:'兵士',  icon:'🪖',file:'heishi',type:'so',sub:'僧侶 × 戦士'},
+  {name:'牧師',  icon:'📖',file:'bokushi',type:'so',sub:'僧侶 × 踊り子'},
+  {name:'賢者',  icon:'🦉',file:'kenja',type:'so',sub:'僧侶 × 魔法使い'},
+  {name:'魔道士',icon:'🔮',file:'madoushi',type:'ma',sub:'魔法使いド直球'},
+  {name:'忍者',  icon:'🥷',file:'ninja',type:'ma',sub:'魔法使い × 戦士'},
+  {name:'道化師',icon:'🎭',file:'doukeshi',type:'ma',sub:'魔法使い × 踊り子'},
+  {name:'占い師',icon:'⭐',file:'uranaishi',type:'ma',sub:'魔法使い × 僧侶'},
+];
+
+// avatarフォルダのPNGを参照（差し替え可能）。読み込み失敗時は絵文字にフォールバック
+function iconImg(t, cls){
+  const c = cls ? `icon ${cls}` : 'icon';
+  return `<img class="${c}" src="avatar/${t.file}.png" alt="${t.name}" `
+    + `onerror="this.outerHTML='<span class=&quot;${c} icon-fallback&quot;>${t.icon}</span>'">`;
+}
+
+// レーダーチャート(6軸・上から時計回り)。メンタル/魅了力/分析力は他ステータスから自動計算される派生値
+const RADAR_STATS = [
+  {key:'メンタル',icon:'🛡️',color:'#4A9EDB', desc:'認識力が上がると連動して上がる（自動計算）', derived:true},
+  {key:'外見力', icon:'✨', color:'#E94560', desc:'ファッション講座・身だしなみ・清潔感（洋服を新調するとUP）'},
+  {key:'デート力',icon:'🗺️',color:'#F5A623', desc:'デートの回数・報告分析・デートマインドマップ作成でUP'},
+  {key:'コミュ力',icon:'💬',color:'#4CAF73', desc:'マニュアルのインプット・アウトプットでUP'},
+  {key:'魅了力', icon:'💫', color:'#7B5EA7', desc:'認識力・表現力・楽転力・共感力・行動力・包容力の経験値＋マニュアル受講チェックで上がる（自動計算）', derived:true},
+  {key:'経験値', icon:'🌟', color:'#8888AA', desc:'クエスト達成度＋マインドマップ作成／インパス診断／デートログ件数で上がる（自動計算）', derived:true},
+];
+// レーダーチャートの外に置く追加の派生ステータス（分析力）
+const ANALYSIS_STAT = {key:'分析力', icon:'🧠', color:'#4A9EDB', desc:'インパス診断ツールの使用回数で上がる（自動計算）', derived:true};
+// マニュアル受講チェックリスト。チェックすると対象ステータスに+10（外すと-10）
+const MANUAL_COURSES = [
+  {key:'認識力', name:'LCIQ認識力向上マニュアル'},
+  {key:'表現力', name:'表現力アップ講座'},
+  {key:'楽転力', name:'楽転力（ポジティブ変換）講座'},
+  {key:'共感力', name:'共感力向上講座'},
+  {key:'行動力', name:'行動力アップ講座'},
+  {key:'包容力', name:'包容力向上講座'},
+  {key:'継続力', name:'継続力アップ講座'},
+];
+// レーダーチャート対象外の追加ステータス
+const EXTRA_STATS = [
+  {key:'認識力', icon:'👁️', color:'#E94560', desc:'LCIQ診断など。上がるとメンタル力が連動して上がる'},
+  {key:'表現力', icon:'🎤', color:'#F5A623', desc:'気持ちや考えを言葉・態度で伝える力。魅了力の経験値になる'},
+  {key:'楽転力', icon:'🔄', color:'#4CAF73', desc:'落ち込みや失敗を前向きに切り替える力。魅了力の経験値になる'},
+  {key:'共感力', icon:'🤝', color:'#4A9EDB', desc:'相手の気持ちに寄り添い理解する力。魅了力の経験値になる'},
+  {key:'行動力', icon:'🏃', color:'#E94560', desc:'迷わず一歩を踏み出す力。魅了力の経験値になる'},
+  {key:'包容力', icon:'🌿', color:'#F5A623', desc:'相手をありのまま受け止める力。魅了力の経験値になる'},
+  {key:'継続力', icon:'🔥', color:'#4CAF73', desc:'コツコツ続け、習慣化する力'},
+];
+const STATS = [...RADAR_STATS.filter(s=>!s.derived), ...EXTRA_STATS];
+
+function statValue(key){
+  if(key==='メンタル') return Math.min(100, state.stats['認識力']||0);
+  if(key==='魅了力'){
+    const src=['認識力','表現力','楽転力','共感力','行動力','包容力'];
+    const avg = src.reduce((s,k)=>s+(state.stats[k]||0),0)/src.length;
+    // マニュアル受講チェックリストで上記6項目を受講済みなら追加ボーナス
+    const checkedBonus = (state.manualDone||[]).filter(k=>src.includes(k)).length * 15;
+    return Math.min(100, Math.round(avg + checkedBonus));
+  }
+  if(key==='経験値') return Math.min(100, Math.round(totalXP()/3200*100) + (state.mindmapCount||0)*5 + (state.impassCount||0)*5 + (state.dateLogs||[]).length*10);
+  if(key==='分析力') return Math.min(100, (state.impassCount||0)*10);
+  return Math.min(100, state.stats[key]||0);
+}
+
+const QUESTS = [
+  {name:'タイプ診断マスター',   desc:'恋愛式学16タイプを理解する', icon:'🔮',xp:100, reward:{コミュ力:15,共感力:10}},
+  {name:'プロフィール写真改善', desc:'外見力基礎講座を完了',        icon:'📸',xp:80,  reward:{外見力:20}},
+  {name:'外見力 Lv.3 達成',    desc:'外見スコア30以上を達成',       icon:'✨',xp:120, reward:{外見力:10,表現力:5}},
+  {name:'マッチングアプリ登録', desc:'アプリを始める第一歩',         icon:'📱',xp:50,  reward:{コミュ力:10}},
+  {name:'初メッセージ送信',    desc:'相手にメッセージを送る',        icon:'💬',xp:80,  reward:{コミュ力:15,デート力:5}},
+  {name:'初回デート成功',      desc:'初めてのデートを完了',          icon:'☕',xp:200, reward:{デート力:25,共感力:15}},
+  {name:'2回目デートOK',       desc:'相手から2回目の承諾を得る',     icon:'🌟',xp:250, reward:{楽転力:20,デート力:15}},
+  {name:'コミュ力 Lv.5 達成',  desc:'コミュスコア50以上を達成',      icon:'💫',xp:150, reward:{コミュ力:10,共感力:10}},
+  {name:'デート力 Lv.5 達成',  desc:'デートスコア50以上を達成',      icon:'🗺️',xp:150, reward:{デート力:10,表現力:10}},
+  {name:'交際スタート',        desc:'パートナーと付き合い始める',     icon:'💑',xp:500, reward:{外見力:10,デート力:10,共感力:10,コミュ力:10}},
+];
+
+const LV_THRESHOLDS = [0,100,250,450,700,1000,1400,1900,2500,3200];
+const LV_RANKS = ['見習い冒険者','新米冒険者','駆け出し冒険者','一人前冒険者',
+  '熟練冒険者','上級冒険者','エリート冒険者','魔剣士','伝説の恋愛師','恋愛の覇者'];
+
+// ─── STATE ──────────────────────────────────────────
+let state = {
+  avatarIdx: 2,
+  stats: Object.fromEntries(STATS.map(s => [s.key, 0])),
+  impassCount: 0,
+  mindmapCount: 0,
+  manualDone: [],
+  done: [],
+  dateLogs: [],
+  myBirth: '',
+};
+function save(){ localStorage.setItem('lqm', JSON.stringify(state)); }
+// 読み込んだstateに不足フィールドを補完する（旧セーブデータ・他バージョンの冒険の書ファイルにも対応）。
+// 今後ステータスやチェックリストが増減しても、ここを直せば読み込み側は壊れない。
+function normalizeState(s){
+  s = s && typeof s === 'object' ? s : {};
+  s.stats = Object.assign(Object.fromEntries(STATS.map(x => [x.key, 0])), s.stats || {});
+  if(typeof s.impassCount !== 'number') s.impassCount = 0;
+  if(typeof s.mindmapCount !== 'number') s.mindmapCount = 0;
+  if(!Array.isArray(s.manualDone)) s.manualDone = [];
+  if(!Array.isArray(s.done)) s.done = [];
+  if(!Array.isArray(s.dateLogs)) s.dateLogs = [];
+  if(typeof s.myBirth !== 'string') s.myBirth = '';
+  if(typeof s.avatarIdx !== 'number') s.avatarIdx = 2;
+  return s;
+}
+function load(){
+  const d = localStorage.getItem('lqm');
+  if(d){ try{ state = JSON.parse(d); }catch(e){} }
+  state = normalizeState(state);
+}
+
+// ─── LEVEL CALC ─────────────────────────────────────
+function totalXP(){ return QUESTS.reduce((s,q,i)=>s+(state.done.includes(i)?q.xp:0),0); }
+function calcLv(xp){
+  for(let i=LV_THRESHOLDS.length-1;i>=0;i--) if(xp>=LV_THRESHOLDS[i]) return i+1;
+  return 1;
+}
+function statLv(v){ return Math.min(10,Math.floor(v/10)+1); }
+
+// ─── RENDER ─────────────────────────────────────────
+function renderAvatar(){
+  const av = AVATARS[state.avatarIdx];
+  document.getElementById('av-icon').outerHTML = iconImg(av, 'av-display').replace('class="icon av-display"','class="icon av-display" id="av-icon"');
+  document.getElementById('av-name').textContent = av.name;
+  document.getElementById('av-sub').textContent  = av.sub;
+}
+
+function renderOverall(){
+  const xp  = totalXP();
+  const lv  = calcLv(xp);
+  const nxt = LV_THRESHOLDS[Math.min(lv, LV_THRESHOLDS.length-1)];
+  const prv = LV_THRESHOLDS[lv-1] || 0;
+  const pct = nxt > prv ? Math.round((xp-prv)/(nxt-prv)*100) : 100;
+  document.getElementById('ov-lv').textContent    = 'Lv.' + lv;
+  document.getElementById('ov-rank').textContent  = LV_RANKS[lv-1] || LV_RANKS[LV_RANKS.length-1];
+  document.getElementById('xp-bar').style.width   = pct + '%';
+  document.getElementById('xp-txt').textContent   = xp + ' / ' + nxt + ' XP';
+}
+
+function radarSVG(){
+  const w = 320, h = 260, cx = w/2, cy = h/2, r = 68;
+  const n = RADAR_STATS.length;
+  const angle = i => (Math.PI*2/n)*i - Math.PI/2;
+  const pt = (i, frac) => [cx + Math.cos(angle(i))*r*frac, cy + Math.sin(angle(i))*r*frac];
+  let rings = '';
+  [0.25,0.5,0.75,1].forEach(frac => {
+    const pts = RADAR_STATS.map((_,i)=>pt(i,frac).join(',')).join(' ');
+    rings += `<polygon points="${pts}" fill="none" stroke="#2a2a4a" stroke-width="1"/>`;
+  });
+  let axes = '';
+  RADAR_STATS.forEach((_,i) => {
+    const [x,y] = pt(i,1);
+    axes += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#2a2a4a" stroke-width="1"/>`;
+  });
+  const dataPts = RADAR_STATS.map((st,i)=>pt(i, statValue(st.key)/100).join(',')).join(' ');
+  let labels = '';
+  RADAR_STATS.forEach((st,i) => {
+    const [x,y] = pt(i,1.45);
+    const val = statValue(st.key);
+    const dx = Math.cos(angle(i));
+    const anchor = dx > 0.3 ? 'start' : dx < -0.3 ? 'end' : 'middle';
+    labels += `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle"
+      font-size="11" fill="${st.color}" font-weight="700">${st.icon} ${st.key}</text>
+      <text x="${x}" y="${y+13}" text-anchor="${anchor}" font-size="9" fill="#8888AA">${val}</text>`;
+  });
+  return `<svg viewBox="0 0 ${w} ${h}" class="radar-svg">
+    ${rings}${axes}
+    <polygon points="${dataPts}" fill="rgba(245,166,35,.28)" stroke="var(--gold)" stroke-width="2"/>
+    ${labels}
+  </svg>`;
+}
+
+function renderStats(){
+  const c = document.getElementById('stats-container');
+  c.innerHTML = '';
+
+  const radarWrap = document.createElement('div');
+  radarWrap.className = 'radar-wrap';
+  radarWrap.innerHTML = radarSVG() + `<div class="radar-legend">${RADAR_STATS.map(st => {
+    const val = statValue(st.key);
+    let ctrl;
+    if(st.key==='経験値'){
+      ctrl = `<div class="stat-adj xp-adj">
+        <span class="impass-count">マインドマップ作成回数${state.mindmapCount||0}回<button class="adj-btn adj-btn-mini" onclick="adjMindmap(-1)">−</button><button class="adj-btn adj-btn-mini" onclick="adjMindmap(1)">＋</button>
+        ／インパス${state.impassCount||0}回<button class="adj-btn adj-btn-mini" onclick="adjImpass(-1)">−</button><button class="adj-btn adj-btn-mini" onclick="adjImpass(1)">＋</button>
+        ／デート${state.dateLogs.length}件（自動計測、誤カウント時は±で補正可）</span>
+      </div>`;
+    } else if(st.derived){
+      ctrl = `<div class="stat-adj"><span class="derived-note">自動計算</span></div>`;
+    } else {
+      ctrl = `<div class="stat-adj">
+        <button class="adj-btn" onclick="adjStat('${st.key}',-10)">−10</button>
+        <button class="adj-btn" onclick="adjStat('${st.key}',+10)">+10</button>
+      </div>`;
+    }
+    return `<div class="radar-legend-row">
+      <span class="stat-name">${st.icon} ${st.key}</span>
+      <span class="stat-lv" style="color:${st.color}">Lv.${statLv(val)}</span>
+      ${ctrl}
+    </div>`;
+  }).join('')}</div>`;
+  c.appendChild(radarWrap);
+
+  const analysisRow = document.createElement('div');
+  analysisRow.className = 'radar-legend-row analysis-row';
+  {
+    const val = statValue(ANALYSIS_STAT.key);
+    analysisRow.innerHTML = `
+      <span class="stat-name">${ANALYSIS_STAT.icon} ${ANALYSIS_STAT.key}</span>
+      <span class="stat-lv" style="color:${ANALYSIS_STAT.color}">Lv.${statLv(val)}</span>
+      <div class="stat-adj">
+        <span class="impass-count">インパス${state.impassCount||0}回<button class="adj-btn adj-btn-mini" onclick="adjImpass(-1)">−</button><button class="adj-btn adj-btn-mini" onclick="adjImpass(1)">＋</button>（自動計測、誤カウント時は±で補正可）</span>
+      </div>`;
+  }
+  c.appendChild(analysisRow);
+
+  const extraHeading = document.createElement('div');
+  extraHeading.className = 'stats-sub-heading';
+  extraHeading.textContent = '追加ステータス';
+  c.appendChild(extraHeading);
+
+  EXTRA_STATS.forEach(st => {
+    const val  = Math.min(100, state.stats[st.key] || 0);
+    const lv   = statLv(val);
+    const div  = document.createElement('div');
+    div.className = 'stat-row';
+    div.innerHTML = `
+      <div class="stat-head">
+        <span class="stat-name">${st.icon} ${st.key}</span>
+        <span class="stat-lv" style="color:${st.color}">Lv.${lv}</span>
+      </div>
+      <div class="stat-bar-bg">
+        <div class="stat-bar-fill" style="width:${val}%;background:${st.color}"></div>
+      </div>
+      <div class="stat-desc">${st.desc}</div>
+      <div class="stat-adj">
+        <button class="adj-btn" onclick="adjStat('${st.key}',-10)">−10</button>
+        <button class="adj-btn" onclick="adjStat('${st.key}',+10)">+10</button>
+      </div>`;
+    c.appendChild(div);
+  });
+
+  const manualHeading = document.createElement('div');
+  manualHeading.className = 'stats-sub-heading';
+  manualHeading.textContent = '📚 マニュアル受講チェックリスト（受講で+10）';
+  c.appendChild(manualHeading);
+
+  const manualList = document.createElement('div');
+  manualList.className = 'manual-list';
+  MANUAL_COURSES.forEach(m => {
+    const checked = state.manualDone.includes(m.key);
+    const row = document.createElement('label');
+    row.className = 'manual-row' + (checked ? ' done' : '');
+    row.innerHTML = `<input type="checkbox" ${checked?'checked':''} onchange="toggleManual('${m.key}')">
+      <span class="manual-name">${m.name}</span>
+      <span class="manual-target">→ ${m.key}</span>`;
+    manualList.appendChild(row);
+  });
+  c.appendChild(manualList);
+}
+
+function renderQuests(){
+  const c  = document.getElementById('quest-container');
+  const qc = document.getElementById('q-count');
+  c.innerHTML = '';
+  qc.textContent = `${state.done.length} / ${QUESTS.length} 完了`;
+  QUESTS.forEach((q,i) => {
+    const done = state.done.includes(i);
+    const rewardTxt = Object.entries(q.reward).map(([k,v])=>`${k}+${v}`).join(' / ');
+    const div = document.createElement('div');
+    div.className = 'q-item' + (done?' done':'');
+    div.innerHTML = `
+      <span class="q-icon">${q.icon}</span>
+      <div class="q-body">
+        <div class="q-name">${q.name}</div>
+        <div class="q-desc">${q.desc}</div>
+        <div class="q-reward">🎁 ${rewardTxt}  (+${q.xp} XP)</div>
+      </div>
+      <span class="q-check"></span>`;
+    div.onclick = () => toggleQuest(i);
+    c.appendChild(div);
+  });
+}
+
+function renderAll(){
+  renderAvatar();
+  renderOverall();
+  renderStats();
+  renderQuests();
+}
+
+// ─── ACTIONS ────────────────────────────────────────
+function toggleQuest(i){
+  const prevLv = calcLv(totalXP());
+  const q = QUESTS[i];
+  const doneIdx = state.done.indexOf(i);
+  if(doneIdx >= 0){
+    state.done.splice(doneIdx,1);
+    Object.entries(q.reward).forEach(([k,v])=>{ state.stats[k] = Math.max(0,(state.stats[k]||0)-v); });
+  } else {
+    state.done.push(i);
+    Object.entries(q.reward).forEach(([k,v])=>{ state.stats[k] = Math.min(100,(state.stats[k]||0)+v); });
+  }
+  save();
+  renderAll();
+  const newLv = calcLv(totalXP());
+  if(newLv > prevLv) showLevelUp(newLv);
+}
+
+function adjStat(key, delta){
+  state.stats[key] = Math.max(0, Math.min(100, (state.stats[key]||0) + delta));
+  save(); renderStats(); renderOverall();
+}
+function useMindmap(){
+  state.mindmapCount = (state.mindmapCount||0) + 1;
+  save(); renderStats(); renderOverall();
+}
+function adjMindmap(delta){
+  state.mindmapCount = Math.max(0, (state.mindmapCount||0) + delta);
+  save(); renderStats(); renderOverall();
+}
+function adjImpass(delta){
+  state.impassCount = Math.max(0, (state.impassCount||0) + delta);
+  save(); renderStats(); renderOverall();
+}
+function toggleManual(key){
+  const idx = state.manualDone.indexOf(key);
+  if(idx >= 0){
+    state.manualDone.splice(idx,1);
+    state.stats[key] = Math.max(0, (state.stats[key]||0) - 10);
+  } else {
+    state.manualDone.push(key);
+    state.stats[key] = Math.min(100, (state.stats[key]||0) + 10);
+  }
+  save(); renderStats(); renderOverall();
+}
+
+function showLevelUp(lv){
+  const t = document.getElementById('toast');
+  document.getElementById('toast-title').textContent = '🌟 LEVEL UP!';
+  document.getElementById('toast-sub').textContent   = `Lv.${lv} 「${LV_RANKS[lv-1]}」に昇格！`;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ─── AVATAR MODAL ────────────────────────────────────
+function openModal(){
+  document.getElementById('modal').style.display = 'flex';
+}
+function buildModal(){
+  const g = document.getElementById('av-grid');
+  g.innerHTML = '';
+  AVATARS.forEach((av,i) => {
+    const d = document.createElement('div');
+    d.className = `av-card ${av.type}`;
+    d.innerHTML = `${iconImg(av,'av-icon')}<div class="av-name">${av.name}</div>`;
+    d.onclick = () => selectAvatar(i);
+    g.appendChild(d);
+  });
+}
+function selectAvatar(i){
+  state.avatarIdx = i;
+  save();
+  document.getElementById('modal').style.display = 'none';
+  renderAvatar();
+}
+
+// ─── RESET ──────────────────────────────────────────
+function resetAll(){
+  if(!confirm('すべてのステータス・クエスト達成状況・チェックリストをリセットします。よろしいですか？\n（アバターの選択は保持されます）')) return;
+  state = normalizeState({avatarIdx: state.avatarIdx});
+  save(); renderAll();
+  document.getElementById('dl-mybirth').value = '';
+  renderDateLogs();
+  alert('リセットしました🔄');
+}
+
+// ─── 冒険の書（ファイル保存・読込） ───────────────────
+// 見た目はMarkdownの「冒険の書」、中身はJSONのセーブデータをそのまま埋め込む。
+// ステータスやチェックリストの項目が増減しても、STATS/RADAR_STATS/MANUAL_COURSES/QUESTSを
+// 動的に参照しているので出力側は自動的に追従する。読込側はJSONブロックのみを見るので壊れない。
+function buildBookMarkdown(){
+  const av = AVATARS[state.avatarIdx];
+  const xp = totalXP();
+  const lv = calcLv(xp);
+  const lines = [];
+  lines.push(`# 🗺️ 冒険の書 — ${av.name}`);
+  lines.push('');
+  lines.push(`> 保存日時: ${new Date().toLocaleString('ja-JP')}`);
+  lines.push('');
+  lines.push(`## 総合レベル`);
+  lines.push(`Lv.${lv}（${LV_RANKS[lv-1]||LV_RANKS[LV_RANKS.length-1]}） — ${xp} XP`);
+  lines.push('');
+  lines.push(`## ステータス`);
+  RADAR_STATS.forEach(st => {
+    lines.push(`- ${st.icon} ${st.key}: Lv.${statLv(statValue(st.key))}（${statValue(st.key)}）${st.derived?'（自動計算）':''}`);
+  });
+  lines.push(`- ${ANALYSIS_STAT.icon} ${ANALYSIS_STAT.key}: Lv.${statLv(statValue(ANALYSIS_STAT.key))}（${statValue(ANALYSIS_STAT.key)}）（自動計算）`);
+  lines.push('');
+  lines.push(`## 追加ステータス`);
+  EXTRA_STATS.forEach(st => {
+    lines.push(`- ${st.icon} ${st.key}: Lv.${statLv(state.stats[st.key]||0)}（${state.stats[st.key]||0}）`);
+  });
+  lines.push('');
+  lines.push(`## マニュアル受講チェックリスト`);
+  MANUAL_COURSES.forEach(m => {
+    lines.push(`- [${state.manualDone.includes(m.key)?'x':' '}] ${m.name}`);
+  });
+  lines.push('');
+  lines.push(`## クエスト（${state.done.length} / ${QUESTS.length} 達成）`);
+  QUESTS.forEach((q,i) => {
+    lines.push(`- [${state.done.includes(i)?'x':' '}] ${q.name}`);
+  });
+  lines.push('');
+  lines.push(`## その他の記録`);
+  lines.push(`- インパス診断ツール使用回数: ${state.impassCount||0}回`);
+  lines.push(`- デートマインドマップ作成回数: ${state.mindmapCount||0}回`);
+  lines.push('');
+  lines.push(`## 📔 デートログ（${state.dateLogs.length}件）`);
+  lines.push(`MyBirth: ${state.myBirth || '(未設定)'}`);
+  lines.push('');
+  [...state.dateLogs].reverse().forEach((e,i) => {
+    lines.push(`### ${i+1}. ${e.datetime || '(日時未記入)'} ${e.name ? '｜' + e.name : ''} ${e.tool ? '｜' + e.tool : ''}`);
+    lines.push(`- 服装: ${e.outfit || '-'} ／ お店: ${e.shop || '-'} ／ 金額: ${e.cost ? (parseInt(e.cost,10)||0).toLocaleString('ja-JP') : '-'}円 ／ 今回の女性とのデート回数: ${e.visitCount || '-'}回目`);
+    lines.push(`- お相手: 年齢${e.age||'-'}${e.age?ageDiffLabel(e.age):''} ／ 職業${e.job||'-'} ／ 住まい${e.home||'-'} ／ タイプ${typeLabelWithSub(e.type)||'-'}`);
+    if(e.goal) lines.push(`- 今回の目標: ${e.goal}`);
+    if(e.talk) lines.push(`- 会話の内容: ${e.talk}`);
+    if(e.good) lines.push(`- うまくいったこと: ${e.good}`);
+    if(e.review) lines.push(`- 感想・改善点: ${e.review}`);
+    if(e.followup) lines.push(`- その後のやり取り/次回約束: ${e.followup}`);
+    lines.push('');
+  });
+  lines.push(`---`);
+  lines.push(`## 💾 セーブデータ（この下のブロックは編集・削除しないでください。読込時に使用します）`);
+  lines.push('```json');
+  lines.push(JSON.stringify(state, null, 2));
+  lines.push('```');
+  lines.push('');
+  return lines.join('\n');
+}
+let savedFileHandle = null; // File System Access API対応ブラウザ(PC)で、2回目以降は同じファイルに無言で上書きするための保存先ハンドル
+
+async function saveBookFile(){
+  const md = buildBookMarkdown();
+  const av = AVATARS[state.avatarIdx];
+  const stamp = new Date().toISOString().slice(0,10);
+  const filename = `冒険の書_${av.name}_${stamp}.md`;
+
+  // 対応ブラウザ(PC): 既に保存先が決まっていればダイアログなしで上書き、初回だけ保存先を選ばせる
+  if(window.showSaveFilePicker){
+    try{
+      if(!savedFileHandle){
+        savedFileHandle = await window.showSaveFilePicker({
+          suggestedName: filename,
+          types: [{description:'Markdown', accept:{'text/markdown':['.md']}}]
+        });
+      }
+      const writable = await savedFileHandle.createWritable();
+      await writable.write(md);
+      await writable.close();
+      alert('冒険の書を上書き保存しました📖\n' + savedFileHandle.name);
+      return;
+    }catch(e){
+      if(e && e.name === 'AbortError') return; // ユーザーがキャンセル
+      savedFileHandle = null; // 失敗時は保存先情報を破棄し、次回また選び直させる
+      // 非対応・失敗時は下のダウンロードにフォールバック
+    }
+  }
+
+  // フォールバック(モバイル等・非対応ブラウザ): 毎回新規ダウンロード
+  const blob = new Blob([md], {type:'application/octet-stream'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  alert('冒険の書のダウンロードを開始しました📖\n' + filename
+    + '\n\nブラウザに表示される保存の確認・通知に従って完了してください（既定はダウンロードフォルダ）。');
+}
+function loadBookFile(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const text = String(reader.result);
+    const m = text.match(/```json\s*([\s\S]*?)```/);
+    if(!m){ alert('セーブデータ（JSONブロック）が見つかりませんでした。冒険の書ファイルを選択してください。'); return; }
+    let parsed;
+    try{ parsed = JSON.parse(m[1]); }
+    catch(e){ alert('セーブデータの読み込みに失敗しました。ファイルが壊れている可能性があります。'); return; }
+    state = normalizeState(parsed);
+    save(); renderAll();
+    document.getElementById('dl-mybirth').value = state.myBirth || '';
+    renderDateLogs();
+    alert('冒険の書を読み込みました📖');
+  };
+  reader.onerror = () => alert('ファイルの読み込みに失敗しました。');
+  reader.readAsText(file, 'utf-8');
+}
+
+// ─── 📔 デートログ ───────────────────────────────────
+function toggleDateLogAccordion(){
+  document.getElementById('datelog-body').classList.toggle('closed');
+  document.getElementById('datelog-toggle-icon').classList.toggle('closed');
+}
+function dlEscapeHtml(s){
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── MyBirth（自分の生年月日） ───
+function calcAgeFromBirth(birthStr){
+  if(!birthStr) return null;
+  const birth = new Date(birthStr);
+  if(isNaN(birth)) return null;
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if(m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
+}
+function onMyBirthChange(){
+  state.myBirth = document.getElementById('dl-mybirth').value;
+  save();
+  updateAgeDiffPreview();
+}
+function ageDiffLabel(partnerAge){
+  const myAge = calcAgeFromBirth(state.myBirth);
+  const n = parseInt(partnerAge, 10);
+  if(myAge === null || !n) return '';
+  const diff = n - myAge;
+  return diff === 0 ? '（同い年）' : diff > 0 ? `（+${diff}歳）` : `（${diff}歳）`;
+}
+function updateAgeDiffPreview(){
+  const val = document.getElementById('dl-age').value;
+  document.getElementById('dl-age-diff').textContent = ageDiffLabel(val);
+}
+
+// ─── 出会ったきっかけ（「その他」選択時のみ手入力欄を表示） ───
+function onDlToolChange(){
+  const wrap = document.getElementById('dl-tool-other-wrap');
+  wrap.style.display = document.getElementById('dl-tool').value === 'その他' ? '' : 'none';
+}
+function dlToolValue(){
+  const sel = document.getElementById('dl-tool').value;
+  if(sel === 'その他') return document.getElementById('dl-tool-other').value.trim();
+  return sel;
+}
+
+// ─── 金額（ステッパーボタン／手入力どちらも可、カンマ区切り表示） ───
+function dlCostRaw(str){
+  return parseInt(String(str).replace(/[^0-9]/g, ''), 10) || 0;
+}
+function adjDlCost(delta){
+  const input = document.getElementById('dl-cost');
+  const next = Math.max(0, dlCostRaw(input.value) + delta);
+  input.value = next.toLocaleString('ja-JP');
+}
+function onDlCostInput(){
+  const input = document.getElementById('dl-cost');
+  const next = Math.max(0, dlCostRaw(input.value));
+  input.value = next.toLocaleString('ja-JP');
+}
+
+function addDateLog(){
+  const get = id => document.getElementById(id).value.trim();
+  const entry = {
+    id: Date.now(),
+    datetime: get('dl-datetime'),
+    name: get('dl-name'),
+    tool: dlToolValue(),
+    outfit: get('dl-outfit'),
+    shop: get('dl-shop'),
+    cost: String(dlCostRaw(get('dl-cost'))),
+    visitCount: get('dl-visitCount'),
+    age: get('dl-age'),
+    job: get('dl-job'),
+    home: get('dl-home'),
+    type: get('dl-type'),
+    goal: get('dl-goal'),
+    talk: get('dl-talk'),
+    good: get('dl-good'),
+    review: get('dl-review'),
+    followup: get('dl-followup'),
+  };
+  if(!entry.datetime && !entry.tool && !entry.talk){
+    alert('最低限「デート日時」か「出会ったきっかけ」か「会話の内容」のいずれかを入力してください');
+    return;
+  }
+  state.dateLogs.push(entry);
+  save();
+  document.getElementById('datelog-form').reset();
+  document.getElementById('dl-cost').value = '0';
+  document.getElementById('dl-age-diff').textContent = '';
+  document.getElementById('dl-tool-other-wrap').style.display = 'none';
+  renderDateLogs();
+}
+function deleteDateLog(id){
+  if(!confirm('このデートログを削除しますか？')) return;
+  state.dateLogs = state.dateLogs.filter(e => e.id !== id);
+  save();
+  renderDateLogs();
+}
+function updateDateLogField(id, field, value){
+  const entry = state.dateLogs.find(e => e.id === id);
+  if(!entry) return;
+  entry[field] = value.trim();
+  save();
+}
+function renderDateLogSummary(){
+  const box = document.getElementById('dl-summary');
+  const logs = state.dateLogs;
+  if(logs.length === 0){ box.innerHTML = '<b>通算デート回数:</b> 計0回'; return; }
+  const buckets = {1:0, 2:0, 3:0, 4:0, 5:0, '6+':0};
+  logs.forEach(e => {
+    const n = parseInt(e.visitCount, 10);
+    if(!n || n < 1) return;
+    if(n >= 6) buckets['6+']++; else buckets[n]++;
+  });
+  box.innerHTML = `<b>通算デート回数:</b> 計${logs.length}回　`
+    + `／ 1回目: ${buckets[1]}　2回目: ${buckets[2]}　3回目: ${buckets[3]}　`
+    + `4回目: ${buckets[4]}　5回目: ${buckets[5]}　6回目以上: ${buckets['6+']}`;
+}
+function typeLabelWithSub(name){
+  if(!name) return '';
+  const av = AVATARS.find(a => a.name === name);
+  return av ? `${name}（${av.sub}）` : name;
+}
+// テーブル列の並び（datetimeと削除ボタンを除く、表示用の加工が必要な列は displayFn を持つ）
+const DL_COLUMNS = [
+  {field:'datetime'}, {field:'name'}, {field:'tool'}, {field:'outfit'}, {field:'shop'},
+  {field:'cost', displayFn: e => e.cost ? dlEscapeHtml((parseInt(e.cost,10)||0).toLocaleString('ja-JP')) + '円' : ''},
+  {field:'visitCount'},
+  {field:'age', displayFn: e => e.age ? dlEscapeHtml(e.age) + dlEscapeHtml(ageDiffLabel(e.age)) : ''},
+  {field:'job'}, {field:'home'},
+  {field:'type', displayFn: e => dlEscapeHtml(typeLabelWithSub(e.type))},
+  {field:'goal'}, {field:'talk'}, {field:'good'}, {field:'review'}, {field:'followup'},
+];
+function renderDateLogs(){
+  renderDateLogSummary();
+  const tbody = document.getElementById('dl-tbody');
+  if(state.dateLogs.length === 0){
+    tbody.innerHTML = `<tr><td colspan="${DL_COLUMNS.length+1}" class="dl-empty">まだデートログがありません。上のフォームから追加してください。</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = [...state.dateLogs].reverse().map(e => {
+    const cells = DL_COLUMNS.map(col => {
+      if(col.displayFn){
+        // 注釈（年齢差・タイプ副属性）が付くセルは表示専用。編集はフォームから行う
+        return `<td class="dl-readonly" title="編集はフォームから行ってください">${col.displayFn(e)}</td>`;
+      }
+      return `<td contenteditable="true" onblur="updateDateLogField(${e.id},'${col.field}',this.textContent)">${dlEscapeHtml(e[col.field])}</td>`;
+    }).join('');
+    return `<tr>${cells}<td><button class="dl-del-btn" onclick="deleteDateLog(${e.id})">削除</button></td></tr>`;
+  }).join('');
+}
+function populateDateLogTypeSelect(){
+  const sel = document.getElementById('dl-type');
+  AVATARS.forEach(av => {
+    const opt = document.createElement('option');
+    opt.value = av.name;
+    opt.textContent = `${av.name}（${av.sub}）`;
+    sel.appendChild(opt);
+  });
+}
+
+// リロードボタン(ホーム画面追加時のスタンドアロン表示にはブラウザのリロードUIがないため)
+document.getElementById('reloadBtn').addEventListener('click', () => {
+  location.href = location.pathname + '?t=' + Date.now();
+});
+
+// ─── INIT ────────────────────────────────────────────
+load();
+buildModal();
+if(localStorage.getItem('lqm')){
+  document.getElementById('modal').style.display = 'none';
+} else {
+  document.getElementById('modal').style.display = 'flex';
+}
+renderAll();
+populateDateLogTypeSelect();
+document.getElementById('dl-mybirth').value = state.myBirth || '';
+renderDateLogs();
+</script>
+</body>
+</html>

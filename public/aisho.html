@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>相性診断ツール|恋愛式学</title>
+<link rel="icon" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<style>
+  :root{ --se:#e0524d; --od:#e8b931; --so:#4caf7d; --ma:#5b7de0; --ink:#222; --sub:#777; --line:#e2e2e6; }
+  *{ box-sizing:border-box; }
+  body{ font-family:'Yu Gothic UI','Hiragino Sans','Meiryo',sans-serif; margin:0; color:var(--ink); background:#fafafa; }
+  header{ background:#1f2330; color:#fff; padding:14px 16px; }
+  header h1{ font-size:17px; margin:0; }
+  header p{ font-size:11.5px; margin:4px 0 0; color:#aab; }
+  header a.nav{ display:inline-block; margin-top:8px; font-size:12px; color:#fff; background:#5b7de0; padding:6px 12px; border-radius:8px; text-decoration:none; }
+  header a.nav:hover{ background:#4a6cd0; }
+  header .portal-back{ display:inline-block; margin-bottom:8px; font-size:11.5px; color:#cdd; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25); padding:5px 12px; border-radius:16px; text-decoration:none; }
+  header .portal-back:hover{ color:#fff; border-color:#fff; }
+  .btns{ display:flex; gap:8px; margin:14px 0 0; }
+  .btns button{ flex:1; padding:9px; font-size:13px; border-radius:10px; border:1px solid #ccc; background:#fff; cursor:pointer; }
+  .btns button:hover{ background:#f0f0f0; }
+  .empty{ text-align:center; color:var(--sub); font-size:13px; padding:30px 10px; }
+  .t16wrap{ overflow-x:auto; }
+  table.t16{ width:100%; border-collapse:collapse; font-size:12px; min-width:520px; }
+  table.t16 th{ background:#1f2330; color:#fff; padding:7px 8px; text-align:left; font-size:11.5px; position:sticky; top:0; }
+  table.t16 td{ border-bottom:1px solid var(--line); padding:7px 8px; vertical-align:top; }
+  table.t16 .nm{ font-weight:700; white-space:nowrap; }
+  table.t16 .cmp{ color:var(--sub); white-space:nowrap; font-size:11px; }
+  table.t16 .mbti{ white-space:nowrap; font-weight:600; }
+  table.t16 tr.gSE td:first-child{ border-left:5px solid var(--se); }
+  table.t16 tr.gOD td:first-child{ border-left:5px solid var(--od); }
+  table.t16 tr.gSO td:first-child{ border-left:5px solid var(--so); }
+  table.t16 tr.gMA td:first-child{ border-left:5px solid var(--ma); }
+  table.t16 tbody tr[data-name]{ cursor:pointer; }
+  table.t16 tbody tr[data-name]:hover{ background:#f6f7fb; }
+  table.t16 tr.det td{ background:#fbfbfd; font-size:11.5px; line-height:1.65; }
+  table.t16 tr.det .k{ font-weight:700; color:#444; }
+  table.t16 tr.det .danger{ color:#c0392b; }
+  .wrap{ max-width:760px; margin:0 auto; padding:14px; }
+  .pickers{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media(max-width:560px){ .pickers{ grid-template-columns:1fr; } }
+  .pcard{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
+  .pcard h2{ font-size:14px; margin:0 0 10px; }
+  .pcard label{ font-size:11.5px; color:var(--sub); display:block; margin:8px 0 4px; }
+  select{ width:100%; padding:8px; font-size:13px; border:1px solid #ccc; border-radius:8px; background:#fff; }
+  .me h2{ color:#1f2330; }
+  .you h2{ color:#c2185b; }
+  .typebadge{ display:inline-block; margin-top:8px; font-size:13px; font-weight:700; padding:4px 10px; border-radius:8px; background:#f1f3f8; }
+  .result{ margin-top:14px; }
+  .card{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:12px; }
+  .card h3{ font-size:14px; margin:0 0 10px; }
+  .scorerow{ display:flex; align-items:center; gap:10px; margin:9px 0; }
+  .scorerow .lbl{ width:46px; font-size:12.5px; font-weight:700; }
+  .grade{ font-size:20px; font-weight:800; width:42px; text-align:center; }
+  .gA{ color:#2e9d5b; } .gB{ color:#6aa84f; } .gC{ color:#e0a020; } .gD{ color:#d0594f; }
+  .scoredesc{ flex:1; font-size:12px; color:#555; }
+  .verdict{ text-align:center; padding:6px 0; }
+  .vbig{ font-size:26px; font-weight:800; margin:2px 0; }
+  .vsub{ font-size:12.5px; color:var(--sub); }
+  .dir{ border-left:4px solid var(--line); padding-left:12px; margin:12px 0; }
+  .dir.me{ border-color:#1f2330; } .dir.you{ border-color:#c2185b; }
+  .dir .dirhd{ font-size:12.5px; font-weight:700; margin-bottom:4px; }
+  .dir .dirtx{ font-size:13px; line-height:1.7; }
+  .tagline{ font-size:11.5px; color:var(--sub); margin-top:4px; }
+  .matrix{ font-size:11.5px; color:var(--sub); margin-top:6px; }
+  footer{ text-align:center; font-size:11px; color:#999; padding:18px; }
+  .pure{ font-size:11px; color:var(--sub); }
+</style>
+</head>
+<body>
+<header>
+  <a class="portal-back" href="index.html">← ポータルへ戻る</a>
+  <h1>💞 相性診断ツール|恋愛式学</h1>
+  <p>自分と相手のタイプを選ぶと、仕事・恋愛・結婚の相性と「付き合い方のコツ」が出ます</p>
+  <a class="nav" href="impass.html" target="_blank" rel="noopener">🔮 タイプがまだ不明 → インパス診断ツールへ</a>
+</header>
+<div class="wrap">
+  <div class="pickers">
+    <div class="pcard me">
+      <h2>🙋 自分のタイプ</h2>
+      <label>主タイプ(一番強い)</label>
+      <select id="meMain"></select>
+      <label>副タイプ(2番目・任意)</label>
+      <select id="meSub"></select>
+      <div class="typebadge" id="meBadge">―</div>
+    </div>
+    <div class="pcard you">
+      <h2>💗 相手のタイプ</h2>
+      <label>主タイプ(一番強い)</label>
+      <select id="youMain"></select>
+      <label>副タイプ(2番目・任意)</label>
+      <select id="youSub"></select>
+      <div class="typebadge" id="youBadge">―</div>
+    </div>
+  </div>
+
+  <div class="btns">
+    <button onclick="clearAll()">🔄 クリア</button>
+    <button onclick="copyResult()">📋 結果をコピー</button>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <div class="card">
+    <h3>📖 16タイプ × MBTI 早見表</h3>
+    <div class="t16wrap">
+      <table class="t16">
+        <thead><tr><th>タイプ</th><th>構成</th><th>MBTI</th><th>特徴(タップで詳細▾)</th></tr></thead>
+        <tbody>
+          <tr class="gSE" data-name="狂戦士"><td class="nm">⚔️ 狂戦士</td><td class="cmp">戦士</td><td class="mbti">ESTJ 幹部</td><td>裏表ゼロの直球エネルギー。目標に一直線、アプローチもド直球。</td></tr>
+          <tr class="gSE" data-name="勇者"><td class="nm">🦸 勇者</td><td class="cmp">戦士×踊り子</td><td class="mbti">ESTP 起業家</td><td>熱量と愛嬌のリーダー。みんなのために前進する人気者。</td></tr>
+          <tr class="gSE" data-name="聖戦士"><td class="nm">🛡️ 聖戦士</td><td class="cmp">戦士×僧侶</td><td class="mbti">ENFJ 主人公</td><td>情熱と協調性の両立。仲間のために戦う。</td></tr>
+          <tr class="gSE" data-name="魔法戦士"><td class="nm">🔮 魔法戦士</td><td class="cmp">戦士×魔法使い</td><td class="mbti">ENTJ 指揮官</td><td>目標達成×分析思考。効率よく結果を出す指揮官。</td></tr>
+          <tr class="gOD" data-name="姫"><td class="nm">👑 姫</td><td class="cmp">踊り子</td><td class="mbti">ESFP エンタメ</td><td>天真爛漫で愛され体質。協調性ありそうで実は「私が主役」。</td></tr>
+          <tr class="gOD" data-name="騎士"><td class="nm">🐴 騎士</td><td class="cmp">踊り子×戦士</td><td class="mbti">ENFP 運動家</td><td>ノリと行動力のムードメーカー。</td></tr>
+          <tr class="gOD" data-name="妖精"><td class="nm">🧚 妖精</td><td class="cmp">踊り子×僧侶</td><td class="mbti">ESFJ 領事</td><td>明るく優しい協調派。場を和ませる。</td></tr>
+          <tr class="gOD" data-name="盗賊"><td class="nm">🗡️ 盗賊</td><td class="cmp">踊り子×魔法使い</td><td class="mbti">ENTP 討論者</td><td>愛嬌の裏に独自の世界観。天然で言葉選びが独特な二面性。</td></tr>
+          <tr class="gSO" data-name="シスター"><td class="nm">⛪ シスター</td><td class="cmp">僧侶</td><td class="mbti">ISFJ 擁護者</td><td>究極の癒しと献身。場の平和を静かに守る。</td></tr>
+          <tr class="gSO" data-name="兵士"><td class="nm">🎖️ 兵士</td><td class="cmp">僧侶×戦士</td><td class="mbti">INFJ 提唱者</td><td>縁の下で支えつつ芯が強い。</td></tr>
+          <tr class="gSO" data-name="牧師"><td class="nm">✝️ 牧師</td><td class="cmp">僧侶×踊り子</td><td class="mbti">INFP 仲介者</td><td>尽くす愛情派。YESマンで和を作るが本音を言えない。</td></tr>
+          <tr class="gSO" data-name="賢者"><td class="nm">📚 賢者</td><td class="cmp">僧侶×魔法使い</td><td class="mbti">ISTJ 管理者</td><td>静かで誠実な知恵者。もめごとのない安定感。</td></tr>
+          <tr class="gMA" data-name="魔道士"><td class="nm">🧙 魔道士</td><td class="cmp">魔法使い</td><td class="mbti">INTP 論理学者</td><td>探求と論理の人。本質以外に興味なし。</td></tr>
+          <tr class="gMA" data-name="忍者"><td class="nm">🥷 忍者</td><td class="cmp">魔法使い×戦士</td><td class="mbti">INTJ 建築家</td><td>静かな戦略家。3年5年10年の計画を着実に遂行。</td></tr>
+          <tr class="gMA" data-name="道化師"><td class="nm">🃏 道化師</td><td class="cmp">魔法使い×踊り子</td><td class="mbti">ISTP 巨匠</td><td>あざとさとセンスを操る知的エンターテイナー。</td></tr>
+          <tr class="gMA" data-name="占い師"><td class="nm">🔯 占い師</td><td class="cmp">魔法使い×僧侶</td><td class="mbti">ISFP 冒険家</td><td>一見太陽に見えるフェイク持ちの穏やかな観察者。掴みどころがない。</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="matrix">※各行をタップすると「恋愛観・長所・裏の顔/地雷」が開きます。MBTI対応は近似(継承セミナー情報)。左の色帯は主タイプ(⚔️戦士/💃踊り子/☩僧侶/🔮魔法使い)。</div>
+  </div>
+</div>
+<footer>恋愛式学(ジョニー式/個別認識学)準拠|相性はあくまで指標。合わない相性でも理解で乗り越えられます</footer>
+
+<script>
+const T = {SE:"戦士",OD:"踊り子",SO:"僧侶",MA:"魔法使い"};
+const EMOJI = {SE:"⚔️",OD:"💃",SO:"☩",MA:"🔮"};
+const KEYS = ["SE","OD","SO","MA"];
+
+// 16タイプ名(主,副)
+const NAME16 = {
+ "SE":"狂戦士","OD":"姫","SO":"シスター","MA":"魔道士",
+ "SE,OD":"勇者","SE,SO":"聖戦士","SE,MA":"魔法戦士",
+ "OD,SE":"騎士","OD,SO":"妖精","OD,MA":"盗賊",
+ "SO,SE":"兵士","SO,OD":"牧師","SO,MA":"賢者",
+ "MA,SE":"忍者","MA,SO":"占い師","MA,OD":"道化師"
+};
+
+// 相性ランキング[自分の主タイプ] = { 各カテゴリ: [1位,2位,3位,4位] }(個別認識学2021マスター由来)
+const RANK = {
+ MA:{ work:["MA","SE","SO","OD"], love:["MA","SO","SE","OD"], marry:["OD","SO","MA","SE"] },
+ SE:{ work:["MA","SO","OD","SE"], love:["SE","OD","MA","SO"], marry:["SO","SE","MA","OD"] },
+ SO:{ work:["SE","OD","MA","SO"], love:["OD","SO","MA","SE"], marry:["SE","OD","SO","MA"] },
+ OD:{ work:["SE","OD","SO","MA"], love:["OD","SO","SE","MA"], marry:["MA","OD","SO","SE"] }
+};
+
+// 主タイプ→相手の主タイプ の「付き合い方」テキスト
+const HOW = {
+ "SE,SE":"阿吽の呼吸で分かり合える最高のフィーリングカップル。会ってすぐ恋に落ちることも。ただ互いに自分のペースを求めるため長期恋愛にはひと工夫を。",
+ "SE,OD":"共感して欲しいかまってちゃん気質は戦士の苦手分野。適切な距離感とメリハリのある関係を保てるとGOOD。",
+ "SE,SO":"「斬り込み隊長」と「後方支援」の好相性。僧侶が主張しない前提で受け止めると安定。自己中な振る舞いには注意。",
+ "SE,MA":"自分軸を持つ魔法使いを少し不気味に感じることも。信念を理解して寄り添えれば、組織でも恋愛でも良好に。",
+ "OD,SE":"裏表なく接してくれる戦士は踊り子にとって分かりやすい存在。ただし攻撃性が出ると萎縮しがち。承認欲求に寄り添えるかが鍵。",
+ "OD,OD":"共感し合えるもの同士でフィーリングは抜群、楽しく関係を築ける。ただ友達同士のようになりがちで、恋愛→結婚への踏み込みが必要。",
+ "OD,SO":"否定されるのが嫌いな踊り子を、僧侶が全て受け止めてくれる安心の相手。長期恋愛向き。結婚まではこちらがリードを。",
+ "OD,MA":"事実・課題に焦点を置く魔法使いとは恋愛の相性は良くない。でも天真爛漫×道筋きっちりの相補性で、結婚相手としてはむしろ良好。",
+ "SO,SE":"感情表現豊かな戦士に憧れを抱く。正反対だからこそ相補性が活き、結婚相手にぴったり。テンポの速さ・自己中心さについていけないとBAD。",
+ "SO,OD":"明るく笑顔を振りまく踊り子は眩しい存在。良い関係を作りやすい。ただ聞き役に回りすぎて疲れてしまう可能性に注意。",
+ "SO,SO":"優柔不断もの同士で強制し合うことが少なく相性は良い。ただ物事が前に進みにくいので、結婚はタイミングが超重要。",
+ "SO,MA":"ブレない信念を持つ魔法使いに憧れを抱く。お互いの感性をよく知ることが大切。敬意・協調性に欠けた行動を感じるとBAD。",
+ "MA,SE":"人気や評価を動機にする戦士とは根本的に価値観が違い、恋愛も仕事も相性BAD気味。友達関係なら衝突が少なく良好。",
+ "MA,OD":"「私に関心を持って!」というかまってちゃん気質が苦手だと短期で終わりがち。亭主関白系で全てを受け入れてくれるなら良好に。",
+ "MA,SO":"ほとんど正反対の両者。保守的な僧侶に物足りなさを感じることも。それが互いの憧れにつながれば結婚相手としてGOOD。",
+ "MA,MA":"自分の世界を持つもの同士でフィーリングは良好。ただ世界観を押し付け合うと急に仲が壊れるので注意。"
+};
+
+const GRADES = [
+ {g:"◎",cls:"gA",d:"最高クラス。自然体で噛み合う"},
+ {g:"○",cls:"gB",d:"良好。歩み寄りで深まる"},
+ {g:"△",cls:"gC",d:"工夫が必要。理解がカギ"},
+ {g:"▲",cls:"gD",d:"要注意。違いを前提に"}
+];
+
+// 相手の主タイプ別「交際後のリアル」(新資料の『カップルになると』より)
+const COUPLE = {
+ SE:"金銭感覚(経験・体験にお金をかける)の価値観を早めに共有。自己主張しないと物足りなく思われる。かまってちゃんは逆効果。短期恋愛になりがちで、長期化には相手の包容力が要る。",
+ OD:"毎日会いたい・LINEは毎日が当たり前。何でも一緒にいたい甘えん坊。愛情表現には愛情表現で返すこと。相思相愛でないと急に冷めるので、こまめな共感を絶やさない。",
+ SO:"意思表示が少なく「どこでもいいよ」が多い。リードして当たり前と捉えると楽。付き合ってすぐ「こうしてほしい」と変化を求めるのはNG、雰囲気を見ながら。",
+ MA:"月1〜2回デート・週数回の生存確認連絡で十分。絵文字や愛情表現は少なめ。マイペースを尊重しつつ「何を(目的)」でリードを。彼氏ヅラ厳禁。"
+};
+// コミュニケーション四則演算(ジョニー式)
+const COMMOP = { SE:"×(称賛とリアクションを増幅して返す)", OD:"＋(共感を足し続ける)", SO:"÷(押し付けず相手に合わせ調和)", MA:"−(無駄をそぎ簡潔に)" };
+
+// 16タイプ詳細(構成,MBTI,恋愛観,長所,裏の顔/地雷)。早見表のタップで開く
+const DETAIL16 = {
+ "狂戦士":["戦士","ESTJ 幹部","裏表ゼロの直球エネルギー。目標に一直線、アプローチもド直球。","行動力・決断力・大義のため切り開く","邪魔されると潰したくなる/単細胞・無茶と見られがち"],
+ "勇者":["戦士×踊り子","ESTP 起業家","熱量と愛嬌のリーダー。みんなのために前進する人気者。","好奇心旺盛・周囲を巻き込む・抜け感","詰めが甘い/後先考えずトラブルメーカーに"],
+ "聖戦士":["戦士×僧侶","ENFJ 主人公","天性のカリスマ。情熱的で献身的、将来を見据え妥協を好まない。","人望・統率力・共感力・Win-Win構築","自己犠牲しすぎ/支配的になりがち/批判に過敏で傷つく"],
+ "魔法戦士":["戦士×魔法使い","ENTJ 指揮官","外面よく情熱的だが合理的。行動派で自立した同類を好む。称賛が嬉しい。","効率性・問題解決・リーダーシップ・根拠ある自信","家で1人悩む裏の顔/高圧的共感で自滅/感情面の配慮不足。※相補性で家庭的男性を求めるキャリアウーマン型もいる"],
+ "姫":["踊り子","ESFP エンタメ","天真爛漫で愛され体質。協調性ありそうで実は「私が主役」。","明るさ・場を華やかに・愛嬌","わがまま・振り回す/共感されないと急に冷める"],
+ "騎士":["踊り子×戦士","ENFP 運動家","ノリと行動力のムードメーカー。16タイプ中もっとも距離感が近い。","場を明るく・仲間第一・要領がいい","衝動買い/八つ当たり・感情が剥き出しに"],
+ "妖精":["踊り子×僧侶","ESFJ 領事","社交的で自由奔放・明るく楽観的。中心人物で恋愛は一途。","聞き上手・共感・周りを巻き込む","熱しやすく冷めやすい/陰口に弱い/距離は近いが心の距離は別"],
+ "盗賊":["踊り子×魔法使い","ENTP 討論者","天性の世渡り上手でお調子者。あざといが本質は外さない二面性。","懐に入るのが上手・信頼させる・行動力","責任感弱い・言い訳上手/真意を見抜かれると逃げる(ついて離れて)"],
+ "シスター":["僧侶","ISFJ 擁護者","究極の癒しと献身。場の平和を静かに守る。","気配り・忍耐・最高の聞き手","自己主張なし/優柔不断/安定を失うことを恐れる"],
+ "兵士":["僧侶×戦士","INFJ 提唱者","理想主義者。社会貢献を成功と考え、深く意味のある関係を求める。","洞察力・誠実・隠れた情熱と野心","批判に敏感/燃え尽きやすい/理想と現実のギャップで自ら関係を壊すことも"],
+ "牧師":["僧侶×踊り子","INFP 仲介者","控えめで安定安心を求める愛情深いサポーター。記念日の記憶力◎。","相手ファースト・気配り・準備周到","団体だと自己主張しない/いいように使われる/考えすぎて動けない"],
+ "賢者":["僧侶×魔法使い","ISTJ 管理者","真面目・誠実で敵を作らない。生徒会長気質で規律正しい。","責任感・客観性・団体行動","決断力が弱い/前例がないと動けない/エネルギー低め"],
+ "魔道士":["魔法使い","INTP 論理学者","探求と論理の人。本質以外に興味なし。","分析力・本質を見抜く・独創性","理屈っぽい・行動しない/距離を詰められるのが苦手"],
+ "忍者":["魔法使い×戦士","INTJ 建築家","静かな戦略家。達成のため人を動かす監督・指揮官タイプ。","戦略性・本質把握・計画を着実に遂行","論破したがる・ケチ/コミュ力低く完璧主義で前に進めない"],
+ "道化師":["魔法使い×踊り子","ISTP 巨匠","あざとさとセンスを操る知的エンターテイナー。一見太陽のフェイク。","演技力・サバサバ・行動力","笑うが目が笑ってない/本心を隠す/深掘りされるのが苦手で地雷が読めない"],
+ "占い師":["魔法使い×僧侶","ISFP 冒険家","一見太陽に見えるフェイク持ちの穏やかな観察者。掴みどころがない。","段取り・危機回避・全体把握","陰気なオーラ/自己主張せず頭の中グルグル/新環境を嫌いネガティブ寄り"]
+};
+
+function fillSelect(sel, noneLabel){
+  let html = `<option value="">${noneLabel}</option>`;
+  KEYS.forEach(k=> html += `<option value="${k}">${EMOJI[k]} ${T[k]}</option>`);
+  sel.innerHTML = html;
+}
+const meMain=document.getElementById("meMain"), meSub=document.getElementById("meSub"),
+      youMain=document.getElementById("youMain"), youSub=document.getElementById("youSub");
+fillSelect(meMain,"(選択してください)"); fillSelect(meSub,"(なし)"); fillSelect(youMain,"(選択してください)"); fillSelect(youSub,"(なし)");
+// デフォルトは未選択
+[meMain,meSub,youMain,youSub].forEach(s=> s.addEventListener("change", render));
+
+function clearAll(){
+  meMain.value=""; meSub.value=""; youMain.value=""; youSub.value="";
+  render();
+}
+function copyResult(){
+  const mM=meMain.value, yM=youMain.value;
+  if(!mM || !yM){ alert("自分と相手の主タイプを選択してください"); return; }
+  const mS=meSub.value, yS=youSub.value;
+  let lines=[];
+  lines.push("【恋愛式学 相性診断】");
+  lines.push("自分: "+typeName(mM,mS));
+  lines.push("相手: "+typeName(yM,yS));
+  [["love","恋愛"],["work","仕事"],["marry","結婚"]].forEach(([c,label])=>{
+    const r1=rankOf(mM,yM,c), r2=rankOf(yM,mM,c);
+    const g=GRADES[Math.round((r1+r2)/2)];
+    lines.push(label+": "+g.g+"(自分→相手"+(r1+1)+"位 / 相手→自分"+(r2+1)+"位)");
+  });
+  lines.push("");
+  lines.push("自分→相手: "+HOW[mM+","+yM]);
+  lines.push("相手→自分: "+HOW[yM+","+mM]);
+  lines.push("");
+  lines.push("交際後のリアル(相手="+T[yM]+"): "+COUPLE[yM]);
+  lines.push("コミュ式: 自分"+COMMOP[mM]+" / 相手"+COMMOP[yM]);
+  navigator.clipboard.writeText(lines.join("\n")).then(()=>alert("結果をコピーしました"));
+}
+
+function typeName(main, sub){
+  if(!sub || sub===main) return NAME16[main] + "(" + T[main] + "ド直球)";
+  const key = main+","+sub;
+  const nm = NAME16[key];
+  return (nm? nm : T[main]+"×"+T[sub]) + "(" + T[main]+"×"+T[sub] + ")";
+}
+function rankOf(selfMain, otherMain, cat){
+  return RANK[selfMain][cat].indexOf(otherMain); // 0..3
+}
+// 同類志向/相補性志向の2パターンを持つタイプの注記
+function complementNote(main, sub){
+  if(main==="SE" && sub==="MA"){ // 魔法戦士
+    return `<div class="tagline">⚖️ <b>相手は2パターンに分かれます。</b>①自立・刺激を好み<b>同類</b>に惹かれるタイプ ②相補性を求め<b>家庭的な相手(牧師=僧侶×踊り子系)</b>を好むキャリアウーマン型。「仕事の熱量」と「どんな家庭を築きたいか」で見極め、①なら成長・挑戦トーク、②なら安心・共感を厚めに。</div>`;
+  }
+  if(main==="SE"){ // 戦士系全般
+    return `<div class="tagline">⚖️ 戦士系は「自立した同類」を好む人と、相補性で「支えてくれる相手」を求める人がいます。相手がどちらかを会話で見極めると刺し方が変わります。</div>`;
+  }
+  return "";
+}
+
+function render(){
+  const mM=meMain.value, mS=meSub.value, yM=youMain.value, yS=youSub.value;
+  document.getElementById("meBadge").textContent = mM? EMOJI[mM]+" "+typeName(mM,mS) : "―";
+  document.getElementById("youBadge").textContent = yM? EMOJI[yM]+" "+typeName(yM,yS) : "―";
+
+  if(!mM || !yM){
+    document.getElementById("result").innerHTML =
+      `<div class="card"><div class="empty">👆 自分と相手の<b>主タイプ</b>を選ぶと、相性と付き合い方が表示されます。</div></div>`;
+    return;
+  }
+
+  // 恋愛相性を主軸に総合判定(自分→相手 と 相手→自分 の平均順位)
+  const cats=[["love","💗 恋愛"],["work","💼 仕事"],["marry","💍 結婚"]];
+  let rows="";
+  let loveAvg=0;
+  cats.forEach(([c,label])=>{
+    const r1=rankOf(mM,yM,c), r2=rankOf(yM,mM,c);
+    const avg=(r1+r2)/2;
+    if(c==="love") loveAvg=avg;
+    const gi=Math.round(avg);
+    const g=GRADES[gi];
+    rows+=`<div class="scorerow"><span class="lbl">${label}</span><span class="grade ${g.cls}">${g.g}</span><span class="scoredesc">${g.d}<br><span class="pure">自分から見て${r1+1}位 / 相手から見て${r2+1}位</span></span></div>`;
+  });
+
+  const gi=Math.round(loveAvg);
+  const verdictTxt=["💞 相思相愛タイプ","😊 育てれば良い相性","🤔 理解でカバー","⚡ 違いを楽しむ覚悟を"][gi];
+
+  const how1=HOW[mM+","+yM], how2=HOW[yM+","+mM];
+
+  document.getElementById("result").innerHTML = `
+    <div class="card verdict">
+      <h3>総合判定(恋愛軸)</h3>
+      <div class="vbig">${GRADES[gi].g} ${verdictTxt}</div>
+      <div class="vsub">${typeName(mM,mS)} × ${typeName(yM,yS)}</div>
+    </div>
+    <div class="card">
+      <h3>📊 相性スコア</h3>
+      ${rows}
+      <div class="matrix">※「◎○△▲」は両方向の平均順位から算出。恋愛用ツールのため恋愛軸で総合判定しています。</div>
+    </div>
+    <div class="card">
+      <h3>🤝 付き合い方のコツ</h3>
+      <div class="dir me">
+        <div class="dirhd">🙋 自分(${T[mM]})から見た相手(${T[yM]})</div>
+        <div class="dirtx">${how1}</div>
+      </div>
+      <div class="dir you">
+        <div class="dirhd">💗 相手(${T[yM]})から見た自分(${T[mM]})</div>
+        <div class="dirtx">${how2}</div>
+      </div>
+      ${mS||yS? `<div class="tagline">💡 副タイプ(${mS?T[mS]:"なし"} / ${yS?T[yS]:"なし"})も加味すると、上記に副タイプの色が混ざります。例: 副が踊り子なら愛嬌・共感が増し、副が魔法使いならこだわり・分析が増します。</div>`:""}
+    </div>
+    <div class="card">
+      <h3>💑 交際後のリアル(相手=${T[yM]})</h3>
+      <div class="dirtx">${COUPLE[yM]}</div>
+      ${complementNote(yM,yS)}
+    </div>
+    <div class="card">
+      <h3>🧮 コミュニケーション四則演算(ジョニー式)</h3>
+      <div class="dirtx">🙋 自分(${T[mM]})= <b>${COMMOP[mM]}</b><br>💗 相手(${T[yM]})= <b>${COMMOP[yM]}</b><br><span class="pure">相手の演算に合わせて接し方を切り替えると噛み合います。</span></div>
+    </div>`;
+}
+// 16タイプ早見表: 行タップで詳細を開閉
+document.querySelectorAll('table.t16 tbody tr[data-name]').forEach(tr=>{
+  tr.addEventListener('click', ()=>{
+    const nx=tr.nextElementSibling;
+    if(nx && nx.classList.contains('det')){ nx.remove(); return; }
+    document.querySelectorAll('table.t16 tr.det').forEach(d=>d.remove());
+    const d=DETAIL16[tr.dataset.name];
+    if(!d) return;
+    const row=document.createElement('tr');
+    row.className='det';
+    row.innerHTML=`<td colspan="4"><span class="k">💗恋愛観:</span> ${d[2]}<br><span class="k">👍長所:</span> ${d[3]}<br><span class="k danger">⚠️裏の顔/地雷:</span> ${d[4]}</td>`;
+    tr.after(row);
+  });
+});
+render();
+</script>
+</body>
+</html>

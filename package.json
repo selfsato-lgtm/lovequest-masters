@@ -1,0 +1,7 @@
+{
+  "name": "lovequest-masters",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "LOVEQUEST MASTERS: 会員限定ページ（Googleログイン + 支払いステータスによるアクセス制御、Vercel Edge Middleware + Serverless Functions）"
+}

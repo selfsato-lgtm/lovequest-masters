@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>恋愛式学 33の呪文 マスターインデックス｜LOVE QUEST MASTERS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#0B0A1F; --window:#171436; --window2:#221C4D;
+  --brass:#C9A227; --rose:#FF4D8D; --mana:#4FD8E8; --leaf:#7BE495;
+  --parch:#F2ECD9; --dim:#8E88B8; --px:3px;
+  --disp:"DotGothic16","MS Gothic",monospace;
+  --body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+.portal-back{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.06);
+  border:1px solid var(--window2);border-radius:20px;padding:7px 14px;margin-bottom:14px;
+  font-size:11.5px;color:var(--parch);text-decoration:none}
+.portal-back:hover{border-color:var(--brass);color:var(--brass)}
+html{background:var(--void)}
+body{
+  font-family:var(--body);color:var(--parch);background:var(--void);
+  background-image:
+    radial-gradient(circle at 15% 0%,rgba(255,77,141,.16),transparent 55%),
+    radial-gradient(circle at 90% 15%,rgba(79,216,232,.13),transparent 55%);
+  min-height:100vh; padding-bottom:32px;
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:repeating-linear-gradient(180deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);
+  opacity:.35;
+}
+
+.win{
+  position:relative;
+  background:linear-gradient(180deg,var(--window2),var(--window));
+  border:var(--px) solid var(--brass);
+  box-shadow:0 0 0 var(--px) var(--void), inset 0 0 0 2px rgba(201,162,39,.28);
+}
+.win::before,.win::after{
+  content:"";position:absolute;width:var(--px);height:var(--px);background:var(--brass);
+}
+.win::before{top:calc(var(--px) * -2);left:calc(var(--px) * -2)}
+.win::after{bottom:calc(var(--px) * -2);right:calc(var(--px) * -2)}
+
+.page{max-width:480px;margin:0 auto;padding:18px 14px 0}
+
+.head{padding:4px 2px 16px}
+.head h1{
+  font-family:var(--disp);font-size:26px;line-height:1.35;letter-spacing:.02em;color:var(--parch);
+}
+.head h1 .brass{color:var(--brass)}
+.head .sub{
+  font-family:var(--disp);font-size:13px;letter-spacing:.12em;color:var(--dim);margin-top:4px;
+}
+.head .lead{
+  font-size:13.5px;line-height:1.75;color:#D9D3F0;margin-top:12px;
+}
+.head .lead b{color:var(--leaf)}
+
+.searchbar{
+  position:sticky;top:0;z-index:10;background:var(--void);
+  padding:10px 0 10px;margin-bottom:6px;
+  border-bottom:2px solid rgba(201,162,39,.35);
+}
+.searchbar input{
+  width:100%;font-family:var(--body);font-size:15px;color:var(--parch);
+  background:rgba(0,0,0,.4);border:2px solid rgba(201,162,39,.45);border-radius:2px;
+  padding:11px 13px;outline:none;
+}
+.searchbar input::placeholder{color:var(--dim)}
+.searchbar input:focus{border-color:var(--brass)}
+
+.cats{display:flex;gap:6px;overflow-x:auto;padding:10px 0 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cats button{
+  flex:0 0 auto;font-family:var(--disp);font-size:12px;letter-spacing:.06em;color:var(--parch);
+  background:rgba(0,0,0,.35);border:1.5px solid rgba(201,162,39,.4);border-radius:2px;
+  padding:7px 11px;white-space:nowrap;
+}
+.cats button.on{background:var(--brass);color:var(--void);border-color:var(--brass)}
+
+.count{font-family:var(--disp);font-size:11.5px;color:var(--dim);padding:6px 2px 0;text-align:right}
+
+.list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.item{overflow:hidden}
+.item-head{
+  width:100%;display:flex;align-items:center;gap:10px;text-align:left;
+  background:none;border:none;color:inherit;font:inherit;cursor:pointer;
+  padding:13px 14px;min-height:52px;
+}
+.item-head .no{
+  font-family:var(--disp);font-size:12px;color:var(--void);background:var(--brass);
+  flex:0 0 auto;padding:3px 6px;line-height:1.2;
+}
+.item-head .name{
+  font-family:var(--disp);font-size:16.5px;color:var(--parch);flex:0 0 auto;
+}
+.item-head .tag{
+  font-size:11px;color:var(--dim);flex:1 1 auto;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.item-head .chev{
+  flex:0 0 auto;color:var(--brass);font-size:12px;transition:transform .2s ease;
+}
+.item.open .item-head .chev{transform:rotate(180deg)}
+.item.open .item-head{border-bottom:1px solid rgba(201,162,39,.35)}
+
+.item-body{
+  max-height:0;overflow:hidden;transition:max-height .28s ease;
+}
+.item.open .item-body{max-height:600px}
+.item-body-inner{padding:14px 16px 16px}
+.item-body .orig{
+  font-size:12px;line-height:1.7;color:var(--dim);
+  border-left:3px solid rgba(201,162,39,.5);padding-left:10px;margin-bottom:12px;
+}
+.item-body dt{
+  font-family:var(--disp);font-size:11.5px;color:var(--rose);letter-spacing:.08em;margin-top:12px;
+}
+.item-body dt:first-of-type{margin-top:0}
+.item-body dd{font-size:13.5px;line-height:1.75;margin-top:4px;color:#EDE8FA}
+
+.empty{padding:28px 14px;text-align:center;color:var(--dim);font-size:13px}
+
+.foot{padding:26px 4px 8px;text-align:center;font-family:var(--disp);font-size:11px;letter-spacing:.14em;color:var(--dim)}
+
+@media (min-width:481px){
+  .page{padding-top:26px}
+  .head h1{font-size:28px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="head">
+    <a class="portal-back" href="index.html">← ポータルへ戻る</a>
+    <h1>恋愛式学 <span class="brass">33の呪文</span><br>マスターインデックス</h1>
+    <p class="sub">SPELL INDEX ｜ 全34項目（33＋番外）</p>
+    <p class="lead">カテゴリと検索で、必要な呪文をその場で引き出せます。気になる呪文をタップすると詳細が開きます。</p>
+  </div>
+
+  <div class="searchbar">
+    <input type="text" id="q" placeholder="呪文名・場面で検索（例：告白、マンネリ、復縁）">
+    <div class="cats" id="cats"></div>
+  </div>
+  <div class="count" id="count"></div>
+
+  <div class="list" id="list"></div>
+
+  <div class="foot">LOVE QUEST MASTERS ｜ 恋愛式学 33の呪文</div>
+</div>
+
+<script>
+const SPELLS = [
+["I. 自分を整え、スタートラインに立つ（自己基盤）", [
+[1,"ホイミ","小さな傷を癒し、HPを少し回復する。","日常の小さなすれ違いや疲れを、その日のうちに癒す魔法。","ちょっとした言い合いの後、相手が仕事で疲れている時。","相手の疲労感や表情の曇りにいち早く気づき、「お疲れ様」「無理しないでね」と声をかけること。アドバイスや正論は言わず、ただ労いの言葉だけを渡すのがコツです。","大ダメージになる前に心の傷を修復し、「この人はいつも気遣ってくれる」という安心感を与えます。"],
+[2,"ピオリム","味方全体の素早さを上げ、先に行動できるようにする。","行動のスピードを上げ、タイミングを逃さず関係をリードする魔法。","デートの誘い、LINEの返信、好意や感謝を伝える場面。","「今日はありがとう」などの感謝や、次のデートの提案を、思い立った瞬間（その日のうち）にすぐ実行すること。駆け引きのために返信を遅らせるなどのブレーキを外します。","相手の熱が冷める前に行動することで、恋愛の主導権を握り、関係の進展スピードを一気に速めます。"],
+[3,"マヌーサ","敵を幻の霧で包み、物理攻撃の命中率を下げる。","清潔感とファッションの霧で自分を覆い、ルックス（物理）による減点判定を無効化する魔法。","デート前、身だしなみを整える時。出会いの初期。","無理にハイブランドを着たり、顔の造形を変えたりする必要はありません。「シワのない服」「整えられた髪と眉」「手入れされた爪や靴」という幻惑の霧をまとうこと。","顔やスタイルの良し悪しという「物理的なハードル」を無効化し、「雰囲気イケメン／美女」として相手を魅了し、第一印象の足切りを防ぎます。"],
+[4,"ベホマ","瀕死の状態からHPを全回復する。","婚活疲れや大きな失恋から、自分の自己肯定感を完全に立ち直らせる魔法。","深く傷つき、恋愛を諦めそうになった時。","恋愛から一度完全に離れ、自分の好きなこと（趣味、美味しい食事、旅行）に没頭すること。「自分はダメだ」と責めるのをやめ、心の充電だけに専念してください。","無理にポジティブになるのではなく、傷を癒し切り、再び恋愛に向き合うエネルギーを全回復させます。"]]],
+
+["II. コミュニケーションの基本（会話と傾聴）", [
+[5,"イオ","敵全体に小さな爆発ダメージを与える。","会話の節目で少し大げさに爆発（リアクション）し、場を盛り上げる魔法。","相手が楽しそうに話している時、会話のテンポを良くしたい時。","ただ「へえ」「そうなんだ」と相槌を流すのではなく、「えっ！？」「すごい！」「それでそれで！？」と、目を見開いて声のトーンを上げ、小さな爆発を何度も起こすこと。","リアクションが大きいほど、相手は「自分の話を楽しく聞いてくれている！」と気分が良くなり、もっとあなたと話したくてたまらなくなります。"],
+[6,"バイシオン","味方の攻撃力を少し上げる。重ね掛けができる。","相手の小さな変化や行動を具体的に褒め、自己肯定感を少しずつ高めていく魔法。","日常の会話、相手が何かをしてくれた時、外見の変化に気づいた時。","「かわいいね」「すごいね」という大雑把な褒め方ではなく、「今日の服の色、すごく似合ってるね」「いつも丁寧に連絡をくれてありがとう」と、具体的で小さな褒め言葉を何度も重ね掛けすること。","重ね掛けすることで相手の承認欲求がじわじわと満たされ、「この人は自分の良いところを本当によく見てくれている」という厚い信頼に変わります。"],
+[7,"レミラーマ","マップ上の隠されたアイテムが光って見つけやすくなる。","相手がサラッと言った言葉の中に隠された「本音や価値観（宝）」を見つけ出し、深掘りして広げる魔法。","相手の表面的な会話から、もう一歩踏み込んだ深いエピソードを引き出したい時。","「旅行が好き」と言われたら、「どこに行ったの？」と事実（場所）を聞くのではなく、「旅行のどういうところが一番好きなの？」と、感情や価値観を掘り下げる質問をかけること。","相手自身も気づいていなかった「こだわり」や「本音」が引き出され、「この人と話すと、なぜか自分らしさが出せる」という特別な居心地の良さを与えます。"],
+[8,"ルカニ","敵の守備力を下げる。","自己開示によって、相手の警戒心（心の壁）を下げる魔法。","初対面や、相手がまだ心を開いていない時。","「実は少し緊張していて…」「昔こういう失敗をしたことがあって…」など、自分の小さな弱点や本音を先に自己開示すること。完璧な自分を演じないのがコツです。","先にこちらがガードを下げることで、相手の警戒心が解け、自然体で本音を話せる空気が生まれます。"]]],
+
+["III. 相手を理解し、深い信頼を築く（関係構築）", [
+[9,"インパス","宝箱の中身がアイテムか罠かを見破る。","相手の言葉の裏にある、本当の価値観（16タイプ）を見抜く魔法。","出会いの初期、デート中、相手の行動の理由がわからない時。","プロフィールや休日の過ごし方から「相手が何を大切にしているか」を観察し、3〜5個の質問を投げて4タイプ（戦士・魔法使い・僧侶・踊り子）の仮説を立てること。","表面的な行動の奥にある価値観を見極めることで、すれ違いを無くし、相手に最適化したアプローチが可能になります。"],
+[10,"マホアゲル","自分のMP（魔力）を味方に分け与える。","自分のエネルギーを相手に注ぎ込み、「分かってもらえた」という安心感で相手の心を満たす魔法。","相手が悩んでいる時、不満をこぼした時、悲しんでいる時。","正論やアドバイスで自分の知識をひけらかすのではなく、「それは辛かったね」「よく頑張ったね」と、相手の感情に完全に寄り添う言葉を、見返りを求めず無条件でプレゼントすること。","相手の心のエネルギーが回復し、「この人は私の最大の理解者だ」という深い共感と親密さが生まれます。"],
+[11,"マホトラ","敵からMP（魔力）を奪い、自分のものにする。","相手の感情（喜び・悲しみ）を共有し、心のエネルギーを分かち合う魔法。","相手が悩みや本音、嬉しかった出来事を打ち明けてくれた時。","解決策や正論（アドバイス）を言わず、「それは辛かったね」「頑張ったね」と、まずは相手の感情に100%寄り添い、一緒にその感情を味わい尽くすこと。","相手の感情を深く受け取ることで、「この人は自分の気持ちを分かってくれる」という強烈な共感を生み出します。"],
+[12,"キアリー","身体に回った毒を消し去り、ダメージを防ぐ。","相手のネガティブな思い込みや自己否定（毒）を、ポジティブな言葉で言い換えて解毒する魔法。","相手が「自分なんて…」「私って〇〇だからダメなんだ」とネガティブになっている時。","相手の短所を否定せず、長所としてリフレーミング（言い換え）して返します。「優柔不断で…」→「それだけ慎重に物事を考えられるってことだよ」など。","相手の心に回っている毒（自己否定）をスッと消し去り、「この人は自分の良いところを見てくれる」という深い安心感を与えます。"],
+[13,"スカラ","味方1人の守備力を上げる。","ブレない誠実さを示し、自分自身の信頼度（守備力）を固める魔法。","相手が不安を感じている時、自分の言葉と行動を一致させる場面。","相手の話を途中で否定せず、最後まで聞き切ること。自分の機嫌で態度を変えず、言ったことは必ず実行して「一貫性」を保ちます。","「この人は絶対に裏切らない」という確固たる防御壁を築き、相手に深い安心感と信頼を与えます。"],
+[14,"フバーハ","炎や吹雪などのブレス攻撃から味方全体を継続的に守る。","慣れや油断という日常のダメージから、二人の関係を継続的に守る魔法。","交際が長くなり、相手の存在が「当たり前」になりそうな時。","親しくなっても「ありがとう」「ごめんね」を絶対に省略しないこと。LINEを既読スルーの駆け引きに使わず、日常の小さな約束を必ず守り続けます。","日常の防御力を高めることで、すれ違いやマンネリによる関係の崩壊を未然に防ぎます。"],
+[15,"メガザル","自分の命と引き換えに、味方全員を完全復活させる。","自分が犠牲になる覚悟で、困難に陥った相手を徹底的に支える魔法。","相手が人生の大きな壁（病気、失業、家族の問題など）に直面した時。","自分の予定や都合を後回しにしてでも「私は絶対にあなたの味方だ」と行動で示すこと。ただし、依存させるのではなく、自分が倒れない範囲での「覚悟」を決めて支えます。","日常の気遣いを超えた究極の献身により、単なる恋人から「一生のパートナー（味方）」としての深い絆が結ばれます。"]]],
+
+["IV. 見方を変え、現状を打破する（自己変容と刺激）", [
+[16,"モシャス","指定した仲間の姿と能力に変身する。","相手や第三者の視点へ変身し、出来事への解釈（見方）を変える魔法。","恋愛がうまくいかず、ネガティブな思い込みに囚われている時。","「LINEが来ない＝嫌われた」と決めつけた時、一度「相手の忙しい事情」や、「親友なら何とアドバイスするか」という別の視点に立ち、事実と解釈を切り離すこと。","自分の視点だけにとらわれず客観視することで、冷静さを取り戻し、無駄に落ち込まず前向きな行動へ繋げられます。"],
+[17,"パルプンテ","何が起こるか予測不能な効果をもたらす。","常識や予定調和を壊し、停滞した関係に予想外の刺激を与える魔法。","デートが毎回同じパターンになり、関係が完全にマンネリ化した時。","お互いにやったことのない未経験のアクティビティ（陶芸、SUPなど）や、普段絶対に行かない場所を提案し、二人に「初めての体験」を投下すること。","「何が起こるか分からない」というドキドキ感が共有され、停滞していた関係に新しい風とときめきを吹き込みます。"],
+[18,"ドラゴラム","強大なドラゴンに変身し、炎を吐いて攻撃する。","未知の領域へ挑戦し、自分の中に眠っていた新たな才能や魅力を覚醒させる魔法。","今の自分を変えたい時、自信が持てず一歩踏み出せない時。","「自分には無理」と思っていた行動（自分から誘う、新しいコミュニティに参加するなど）に対し、あれこれ考える前にあえて勢いで挑戦し、環境を変えてしまうこと。","普段の自分（人間）を捨てて大きな挑戦（ドラゴン）をすることで、殻が破れ、圧倒的な行動力と自信を手に入れます。"]]],
+
+["V. デートを設計し、体験価値を高める（環境と導線）", [
+[19,"まほうの地図","世界全体の地形と、自分の現在地を示す。","デートの全体像（見通し）を事前に見せ、相手の不安をなくす設計の魔法。","初デートの誘い、プランの共有時。","「12時に駅に集合して、ランチの後は軽く散歩して、15時くらいには解散しようか」など、デートの全体像と終わりの時間を事前に共有し、相手が安心して準備できる状態を作ること。","「何時に終わるか」「どこへ行くか」の設計図を共有することで、相手の警戒心が解け、心から安心してデートに参加できるようになります。"],
+[20,"まほうのじゅうたん","空を飛び、地形を無視して快適に移動できる乗り物。","移動や待ち時間のストレスをなくし、デート全体を快適に進行させる導線設計の魔法。","デートプランの作成時、複数のスポットを巡る時。","相手が歩き疲れない距離感、混雑を避けたルート、お腹が空く前の食事、適切なタイミングでのカフェ休憩などを事前に組み込み、当日は迷わずエスコートすること。","相手を疲れさせず、景色や会話を楽しみながら次の目的地へスムーズに運ぶことで、「一緒にいて楽だ」という高い満足度を生み出します。"],
+[21,"アストロン","味方全体を鋼鉄に変え、敵の攻撃も味方の魔法も一切受け付けない状態にする。","外部の騒音や邪魔を一切遮断し、二人だけの会話に集中できる完全な空間を作る魔法。","初デートや、周りを気にせず深い話（価値観の共有など）がしたい時。","騒がしいチェーン店を避け、席間隔が広いお店、または半個室の落ち着いたお店を事前リサーチして予約し、外部のノイズを完全に遮断する環境を整えること。","物理的・心理的な邪魔が入らないため、相手の警戒心が解け、二人の親密度を極限まで高めることができます。"],
+[22,"せいすい","一定時間、弱い魔物とのエンカウントを防ぐ。","見栄や価格競争といった「恋愛の雑念（魔物）」を遠ざけ、本物の体験価値だけを共有する魔法。","デートの行き先やお店を選ぶ時。","予算の高さや「SNS映え」を優先するのではなく、相手がポロッと言っていた「行きたい場所」や「好きなもの」を組み込み、価格競争から離れた意味ある体験を用意すること。","高いお金をかけるのではなく、「自分のために選んでくれた」という心に残る時間を届けることで、純粋で強固な関係性を育てます。"],
+[23,"ひかりのドレス","装備すると光を放ち、呪文をたまに跳ね返す美しいドレス。","夜景や照明などを身にまとい、いつもの時間を「特別な恋愛空間」へドレスアップする魔法。","ロマンチックな雰囲気を出したい時、告白の前、記念日。","デートの終盤、夕暮れ時や夜景の見える場所、間接照明のきれいなバーなどへ移動し、光と空間の力を借りて、会話のトーンを自然に「恋愛モード」へ切り替えること。","環境の力を借りることで、二人の時間に非日常の美しさが演出され、自然と恋愛感情が後押しされます。"]]],
+
+["VI. 恋愛感情を揺さぶり、関係を進展させる（好意の醸成）", [
+[24,"ラリホー","敵を深い眠りに誘う。","警戒心を眠らせ、一緒にいて最高にリラックスできる「安心感」を与える魔法。","デート中の会話、一緒に過ごす何気ない時間。","沈黙を無理に埋めようと焦らず、ゆったりとしたペースで過ごすこと。相手がどんな話をしても「いいね」「面白いね」と肯定し、評価されない空間を作ります。","刺激的なドキドキではなく、「この人といると自然体でいられる（眠れるほど安心できる）」という、長く続く恋心の土台を作ります。"],
+[25,"メダパニ","敵を混乱させ、正常な判断を狂わせる。","良い意味でのギャップを見せ、相手の中にある「友達」という印象を混乱（リセット）させる魔法。","いい人止まりで友達関係から抜け出せない時、異性としてドキッとさせたい時。","普段クールな人が無邪気に笑う、普段明るい人が真剣に夢を語るなど、相手が持っている「あなたへのイメージ」を良い意味で裏切る言動を投下すること。","「あれ？こんな一面もあったの？」と相手の心を揺さぶり、固定化された印象を壊して恋愛対象として意識させます。"],
+[26,"マホトーン","敵の呪文を封じ、魔法を使えなくする。","安全な「友達トーク」をあえて封印し、お互いを意識せざるを得ない「男女の会話」へと強制シフトさせる魔法。","友達止まりの関係を抜け出したい時、デート中盤で深い関係を作りたい時。","「最近仕事どう？」という当たり障りない会話を打ち切り、「付き合ったらどんなデートが理想？」「過去の恋愛で一番譲れなかったことは？」など、あえて踏み込んだ恋愛観の話題を切り出すこと。","ただの「いい人（友達）」という安全な関係性が封印され、お互いを異性として意識するドキドキした空気が生まれます。"],
+[27,"テレポート","離れた場所へ瞬時に移動する。","LINE（オンライン）の世界から、実際のデート（リアル）の世界へ関係を瞬時に移行する魔法。","マッチングアプリやLINEでメッセージのやり取りが十分に温まった瞬間。","共通の趣味や食べ物の話で盛り上がった瞬間に、ダラダラと会話を引き延ばさず、「よかったら今度そこへ一緒に行こう」とサクッとリアルな提案へ切り替えること。","文字のやり取りを終わらせ、「会って話そう」と現実世界へ関係をワープさせることで、本当の恋愛をスタートさせます。"],
+[28,"ルーラ","一度行ったことのある町へ瞬時に移動する。","今の楽しい感情のまま、一瞬で「次のデートの約束」へ移動する魔法。","デートが最も盛り上がっている最中、または別れ際。","「楽しかったね、また今度！」で終わらせず、会話で出た「水族館行きたいね」という話題を逃さず、その場で「じゃあ来週行こうよ！」と次回の予定を確定させること。","余韻が冷めないうちに次回の約束（目的地）へ着地させることで、関係のフェードアウトを防ぎスムーズに進展させます。"],
+[29,"バイキルト","味方1人の攻撃力を2倍にする。","ここぞという場面で、自分の長所を最大限に発揮する魔法。","勝負デート、告白前の重要な局面。","相手の価値観（16タイプ）に合わせて、自分の強みをカスタマイズして届けること。戦士タイプには「行動力」を、僧侶タイプには「気遣い」を意識的に強調して見せます。","自分の魅力が相手に最も響く形に変換され、最大出力で相手の心に刺さります。"]]],
+
+["VII. 結ばれる未来へ（決断と再出発）", [
+[30,"メラゾーマ","巨大な火球を放ち、敵単体に絶大なダメージを与える。","蓄積した想いとMP（信頼）を一気に解放し、本命へ真剣な愛をぶつける「最大火力の告白」魔法。","関係性が十分に温まり、恋人としての交際を申し込む時。","変な駆け引きや遠回しな言葉はすべて捨て、「好きです。付き合ってください」と、目を見て真っ直ぐ、シンプルかつ最大の熱量で本音をぶつけること。","小手先のテクニックではなく、真っ直ぐで強烈な想いが相手の心に焼き付き、関係を次のステージへ進めます。"],
+[31,"メガンテ","自分の命と引き換えに大爆発を起こし、敵全体を砕け散らせる。","過去の自分（独身の自由や迷い）を完全に終わらせ、新しい未来（結婚・同棲）へ進むための「究極の覚悟」を決める魔法。","プロポーズ、結婚、同棲など人生の重大な決断時。","「もし失敗してもこの人と一緒にいる」という覚悟を決め、親への挨拶や婚約指輪の購入など、退路を断って物理的な行動を起こすこと。","自分の迷いを爆発させて消し去ることで、相手に本気の覚悟が伝わり、二人の新しい人生が切り開かれます。"],
+[32,"ザオラル","死んだ仲間を一定確率で生き返らせる。","音信不通や喧嘩などで「終わってしまった関係」を、もう一度息を吹き返させる魔法。","冷却期間後の連絡、関係修復、復縁のきっかけ作り。","相手の誕生日や共通の話題など「自然な口実」を使い、長文や重い謝罪を避け、返信を求めない軽やかなLINEを送って再びつながる糸を垂らすこと。","プレッシャーを与えない自然な接点を作ることで、途切れた縁を再びつなぎ直すチャンスを作ります（※必ず成功するとは限らないのがザオラルです）。"],
+[33,"ザラキ","敵全体を一定確率で即死させる。","自分を不幸にする「曖昧な関係（都合のいい関係・執着）」を、一撃で強制終了させる魔法。","脈のない片思いが長引いている時、依存関係から抜け出したい時。","連絡先を消す、会うのをやめる、きっぱりと別れを告げるなど、自ら「強制終了」のボタンを押し、自分を傷つけるだけのつながりを断ち切ること。","ズルズル続く関係の息の根を止めることで、心が軽くなり、新しい出会いを受け入れるための「未来の余白」を取り戻します。"]]],
+
+["番外・自己防衛", [
+[0,"トヘロス","自分より弱い魔物を寄せ付けなくする。","自分の価値観や基準を明確にし、合わない相手（消耗する相手）を自然に遠ざける自己ブランディングの魔法。","婚活アプリのプロフィール作成時、自分に合わない人からのアプローチが多くて疲弊している時。","「誰にでも好かれようとする」八方美人をやめ、プロフィールや会話で自分の好きなこと・譲れない価値観をはっきりと発信し、ミスマッチを未然に防ぐこと。","自分の時間やエネルギーを奪う「魔物」を遠ざけ、本当に相性の良い相手（本命）だけと出会える確率を劇的に高めます。"]]]
+]
+
+const shortCat = c => {
+  if (c.indexOf('番外') === 0) return '番外';
+  const head = c.split('.')[0].trim();
+  return head || c;
+};
+
+const catsEl = document.getElementById('cats');
+const listEl = document.getElementById('list');
+const countEl = document.getElementById('count');
+const qEl = document.getElementById('q');
+
+let cat = 'ALL';
+let openKey = null;
+
+catsEl.innerHTML = ['ALL', ...SPELLS.map(x => x[0])].map(c =>
+  `<button data-c="${c}">${c === 'ALL' ? 'すべて' : shortCat(c)}</button>`
+).join('');
+
+function esc(s){
+  return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+}
+
+function rows(){
+  const term = (qEl.value || '').trim();
+  let r = [];
+  SPELLS.forEach(([c, arr]) => {
+    if (cat !== 'ALL' && c !== cat) return;
+    arr.forEach(x => {
+      if (!term || x[1].includes(term) || x[3].includes(term) || x[4].includes(term)) r.push([c, x]);
+    });
+  });
+  return r;
+}
+
+function draw(){
+  catsEl.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.c === cat));
+  const r = rows();
+  countEl.textContent = r.length + ' / 34件';
+
+  if (!r.length){
+    listEl.innerHTML = '<div class="empty">該当する呪文がありません</div>';
+    return;
+  }
+
+  listEl.innerHTML = r.map(([c, x]) => {
+    const key = x[0] + '_' + x[1];
+    const isOpen = key === openKey;
+    return `<div class="item win ${isOpen ? 'open' : ''}" data-key="${key}">
+      <button class="item-head" data-key="${key}">
+        <span class="no">${x[0] ? String(x[0]).padStart(2,'0') : '－'}</span>
+        <span class="name">${esc(x[1])}</span>
+        <span class="tag">${esc(shortCat(c))}</span>
+        <span class="chev">▾</span>
+      </button>
+      <div class="item-body">
+        <div class="item-body-inner">
+          <p class="orig">【本来の効果】${esc(x[2])}</p>
+          <dl>
+            <dt>恋愛式学での定義</dt><dd>${esc(x[3])}</dd>
+            <dt>どんな時に使う？</dt><dd>${esc(x[4])}</dd>
+            <dt>方法論</dt><dd>${esc(x[5])}</dd>
+            <dt>効果</dt><dd>${esc(x[6])}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+catsEl.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  cat = b.dataset.c;
+  draw();
+});
+
+listEl.addEventListener('click', e => {
+  const b = e.target.closest('.item-head');
+  if (!b) return;
+  const key = b.dataset.key;
+  openKey = (openKey === key) ? null : key;
+  draw();
+  if (openKey) {
+    requestAnimationFrame(() => {
+      document.querySelector(`.item[data-key="${CSS.escape(openKey)}"]`)?.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  }
+});
+
+qEl.addEventListener('input', () => { draw(); });
+
+draw();
+</script>
+</body>
+</html>

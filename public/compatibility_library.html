@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>相性ライブラリ | LOVEQUESTプレイヤー図鑑</title>
+<link rel="icon" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<style>
+:root{
+  --bg:#0D0D1A; --card:#1A1A35; --card2:#12122A;
+  --gold:#F5A623; --red:#E94560; --blue:#4A9EDB;
+  --green:#4CAF73; --purple:#7B5EA7;
+  --white:#FFFFFF; --light:#E0E0E0; --muted:#8888AA;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Yu Gothic UI','Hiragino Sans','Meiryo',sans-serif;
+  background:var(--bg);color:var(--light)}
+
+.app{min-height:100vh}
+
+/* header */
+.topbar{display:flex;align-items:center;padding:12px 16px;
+  border-bottom:1px solid #2a2a4a;background:linear-gradient(135deg,#0D0D1A 0%,#1A0D2E 100%);
+  position:sticky;top:0;z-index:60}
+.hdr-side{flex:1;display:flex;align-items:center;gap:10px;min-width:0}
+.hdr-side.right{justify-content:flex-end}
+.hamburger{font-size:20px;cursor:pointer;color:var(--light);background:none;border:none;padding:4px;line-height:1;flex-shrink:0}
+.topbar .home-link{flex-shrink:0;display:flex;align-items:center;gap:10px;background:none;border:none;cursor:pointer;padding:0;text-align:left}
+.topbar .avatar{width:34px;height:34px;border-radius:50%;background:var(--gold);
+  display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.topbar .titles{min-width:0}
+.topbar .t-title{font-size:14.5px;font-weight:900;color:var(--white);white-space:nowrap}
+.topbar .t-sub{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.portal-back{flex-shrink:0;display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.06);border:1px solid #3a3a5a;border-radius:20px;padding:7px 14px;
+  font-size:11.5px;color:var(--light);text-decoration:none;white-space:nowrap}
+.portal-back:hover{border-color:var(--gold);color:var(--gold)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;flex-shrink:0}
+
+/* layout: ページ全体を通常スクロールさせ、サイドバーだけ画面追従させる */
+.layout{display:flex;align-items:flex-start}
+
+/* sidebar */
+.sidebar{width:140px;flex-shrink:0;border-right:1px solid #2a2a4a;background:var(--card2);
+  padding:10px 6px;transition:margin-left .2s;
+  position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto}
+.sidebar.collapsed{margin-left:-146px}
+.sidebar-label{font-size:10px;color:var(--muted);padding:4px 8px;margin-bottom:4px;letter-spacing:.5px}
+.side-item{font-size:11px;padding:7px 8px;border-radius:8px;background:transparent;
+  display:flex;gap:6px;align-items:center;cursor:pointer;margin-bottom:3px;color:var(--light);
+  border:1px solid transparent}
+.side-item:hover{background:var(--card)}
+.side-item.active{background:var(--gold);color:var(--bg);font-weight:700}
+.side-item .icon{width:18px;height:18px;object-fit:contain;border-radius:4px;flex-shrink:0}
+.side-item .icon.icon-fallback{font-size:14px;width:auto;height:auto}
+.side-item .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* main */
+.main{flex:1;min-width:0;padding:20px 16px}
+.main-inner{max-width:600px;margin:0 auto}
+
+/* home（TOP）画面 */
+.home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;margin-top:18px}
+.home-item{background:var(--card);border:1px solid #2a2a4a;border-radius:12px;padding:12px 4px;
+  text-align:center;cursor:pointer}
+.home-item:hover{border-color:var(--gold)}
+.home-item .icon{display:block;margin:0 auto;width:34px;height:34px;object-fit:contain;border-radius:8px}
+.home-item .icon.icon-fallback{font-size:24px;width:auto;height:auto}
+.home-item .name{font-size:10.5px;margin-top:4px}
+
+.welcome{text-align:center;margin-bottom:18px}
+.welcome .w-icon{width:56px;height:56px;object-fit:contain;border-radius:10px;margin:0 auto}
+.welcome .w-icon.icon-fallback{font-size:44px;width:auto;height:auto}
+.welcome .w-title{font-size:16px;font-weight:900;color:var(--white);margin-top:6px}
+.welcome .w-sub{font-size:11.5px;color:var(--muted);margin-top:3px}
+
+/* 番号付き目次(パートナー一覧) */
+.toc-box{background:var(--card);border:1px solid #2a2a4a;border-radius:12px;padding:10px 6px;margin-bottom:16px}
+.toc-heading{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);
+  padding:4px 10px 8px;border-bottom:1px solid #2a2a4a;margin-bottom:4px}
+.toc-list{list-style:none}
+.toc-item{display:flex;gap:8px;align-items:baseline;padding:7px 10px;border-radius:8px;
+  cursor:pointer;font-size:12.5px}
+.toc-item:hover{background:var(--card2)}
+.toc-item.pending{opacity:.4;cursor:default}
+.toc-item .toc-num{color:var(--gold);font-weight:900;flex-shrink:0;min-width:16px}
+.toc-item .toc-icon{flex-shrink:0;width:18px;height:18px;object-fit:contain;border-radius:4px}
+.toc-item .toc-icon.icon-fallback{width:auto;height:auto}
+.toc-item .toc-name{flex:1}
+.toc-item .toc-mark{font-size:10px;color:var(--muted);flex-shrink:0}
+.toc-more{display:block;margin:6px auto 2px;font-size:11px;padding:5px 16px;border-radius:14px;
+  border:1px solid #444;background:transparent;color:var(--muted);cursor:pointer}
+.toc-more:hover{border-color:var(--gold);color:var(--gold)}
+
+/* 記事内サブ目次(1-1, 1-2...) */
+.subtoc-box{background:var(--card2);border:1px solid #2a2a4a;border-radius:10px;
+  padding:8px 10px;margin-bottom:12px}
+.subtoc-heading{font-size:10.5px;color:var(--muted);margin-bottom:4px;padding:2px 4px}
+.subtoc-item{font-size:11.5px;padding:5px 6px;border-radius:6px;cursor:pointer;
+  display:flex;gap:6px;color:var(--light)}
+.subtoc-item:hover{background:var(--card);color:var(--gold)}
+.subtoc-item .st-num{color:var(--gold);font-weight:700;flex-shrink:0}
+
+/* PC: 右にスティッキーな追従ミニ目次 */
+.sticky-toc{display:none}
+@media(min-width:900px){
+  .with-sticky{display:flex;gap:20px;align-items:flex-start}
+  .with-sticky .art-col{flex:1;min-width:0}
+  .sticky-toc{display:block;width:170px;flex-shrink:0;position:sticky;top:73px;
+    background:var(--card2);border:1px solid #2a2a4a;border-radius:10px;padding:10px}
+  .sticky-toc .subtoc-heading{padding:2px 2px 6px}
+}
+
+.stats-line{text-align:center;font-size:10.5px;color:var(--muted);margin-bottom:14px}
+.random-btn{display:block;margin:0 auto 18px;font-size:11.5px;padding:6px 16px;border-radius:16px;
+  border:1px solid #444;background:transparent;color:var(--muted);cursor:pointer}
+.random-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* chat bubble article */
+.bubble{background:var(--card);border-radius:16px;padding:16px;display:flex;gap:10px;align-items:flex-start}
+.bubble .b-avatar{width:32px;height:32px;border-radius:50%;background:var(--green);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.bubble .b-body{flex:1;min-width:0}
+.bubble .b-title{font-size:13px;font-weight:900;color:var(--gold);margin-bottom:8px}
+.art-body{font-size:13px;line-height:1.85;color:var(--light)}
+.art-body p{margin-bottom:9px}
+.art-body .sec-h{color:var(--gold);font-weight:900;font-size:13px;margin:16px 0 6px;
+  padding-bottom:3px;border-bottom:1px solid #2a2a4a}
+.art-body p:first-child{margin-top:0}
+.source-tag{font-size:9.5px;color:var(--muted);text-align:right;margin-top:12px}
+.source-tag a{color:var(--muted);text-decoration:underline}
+.source-tag a:hover{color:var(--gold)}
+
+.missing{background:var(--card);border:2px solid var(--red);border-radius:16px;
+  padding:20px;text-align:center}
+.missing .m-icon{font-size:34px;margin-bottom:6px}
+.missing .m-title{font-size:13.5px;font-weight:900;color:var(--red)}
+.missing .m-desc{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.7}
+.fallback-link{display:inline-block;margin-top:12px;font-size:11.5px;padding:7px 16px;border-radius:16px;
+  background:var(--gold);color:var(--bg);font-weight:900;text-decoration:none}
+
+.loading{text-align:center;color:var(--muted);font-size:13px;padding:60px 20px}
+
+@media(max-width:600px){
+  .sidebar{position:fixed;left:0;top:57px;bottom:0;z-index:50;box-shadow:2px 0 12px rgba(0,0,0,.4)}
+  .sidebar.collapsed{margin-left:-146px}
+  .portal-back{padding:6px 10px;font-size:10px}
+  .portal-back .pb-txt{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <div class="hdr-side left">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <a class="portal-back" href="index.html">← <span class="pb-txt">ポータルへ戻る</span></a>
+    </div>
+    <button class="home-link" onclick="goHome()" title="TOPに戻る">
+      <div class="avatar" id="topAvatar">🔮</div>
+      <div class="titles">
+        <div class="t-title">相性ライブラリ</div>
+        <div class="t-sub"><span class="dot"></span>ジョニー執筆・16タイプの本物の相性解説</div>
+      </div>
+    </button>
+    <div class="hdr-side right"></div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-label">目次（タイプ）</div>
+      <div id="sideList"></div>
+    </div>
+
+    <div class="main">
+      <div class="main-inner">
+        <div class="loading" id="loading">読み込み中...</div>
+
+        <div id="mainUI" style="display:none">
+          <div id="homeView">
+            <div class="welcome">
+              <div class="w-icon">📚</div>
+              <div class="w-title">相性ライブラリへようこそ</div>
+              <div class="w-sub">気になるタイプをタップして相性を調べよう</div>
+            </div>
+            <div class="home-grid" id="homeGrid"></div>
+            <div class="stats-line" id="statsBarHome"></div>
+            <button class="random-btn" onclick="randomEntry()">🎲 ランダムに読む</button>
+          </div>
+
+          <div id="typeView" style="display:none">
+          <div class="welcome">
+            <div class="w-icon" id="welcomeIcon">⭐</div>
+            <div class="w-title" id="welcomeTitle">占い師タイプ の相性</div>
+            <div class="w-sub">気になる相手のタイプを選んでね</div>
+          </div>
+
+          <div class="toc-box">
+            <div class="toc-heading">📑 目次 — <span id="tocOwnerName">占い師</span>タイプとの相性一覧</div>
+            <div class="toc-list" id="partnerRow"></div>
+            <button class="toc-more" id="tocMoreBtn" onclick="toggleTocMore()" style="display:none">もっと見る</button>
+          </div>
+          <div class="stats-line" id="statsBar"></div>
+          <button class="random-btn" onclick="randomEntry()">🎲 ランダムに読む</button>
+
+          <div id="article" style="display:none">
+            <div class="with-sticky">
+              <div class="art-col">
+                <div class="subtoc-box" id="subtocBox" style="display:none">
+                  <div class="subtoc-heading">この記事の目次</div>
+                  <div id="subtocList"></div>
+                </div>
+                <div class="bubble">
+                  <div class="b-avatar" id="artAvatar"></div>
+                  <div class="b-body">
+                    <div class="b-title" id="artTitle"></div>
+                    <div class="art-body" id="artBody"></div>
+                    <div class="source-tag" id="artSource"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="sticky-toc" id="stickyToc" style="display:none">
+                <div class="subtoc-heading">目次</div>
+                <div id="stickyTocList"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="missing" style="display:none">
+            <div class="missing">
+              <div class="m-icon">📝</div>
+              <div class="m-title">この組み合わせはまだ執筆中です</div>
+              <div class="m-desc" id="missingDesc"></div>
+              <a class="fallback-link" href="player_encyclopedia.html" target="_blank">🔮 仮の自動診断結果を見る（プレイヤー図鑑）</a>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TYPES = [
+  {code:'狂戦士',icon:'⚔️',file:'kyousenshi'}, {code:'勇者',icon:'🦸',file:'yuusha'}, {code:'魔法戦士',icon:'🧙',file:'mahousenshi'}, {code:'聖戦士',icon:'🛡️',file:'seisenshi'},
+  {code:'姫',icon:'👸',file:'hime'}, {code:'騎士',icon:'🏇',file:'kishi'}, {code:'盗賊',icon:'🗡️',file:'touzoku'}, {code:'妖精',icon:'🧚',file:'yousei'},
+  {code:'シスター',icon:'🌿',file:'sister'}, {code:'兵士',icon:'🪖',file:'heishi'}, {code:'牧師',icon:'📖',file:'bokushi'}, {code:'賢者',icon:'🦉',file:'kenja'},
+  {code:'魔道士',icon:'🔮',file:'madoushi'}, {code:'忍者',icon:'🥷',file:'ninja'}, {code:'道化師',icon:'🎭',file:'doukeshi'}, {code:'占い師',icon:'⭐',file:'uranaishi'},
+];
+const ICON_BY_NAME = Object.fromEntries(TYPES.map(t=>[t.code,t.icon]));
+const TYPE_BY_NAME = Object.fromEntries(TYPES.map(t=>[t.code,t]));
+
+// 継承マスター資料（源流ドキュメント）へのリンク。シスター・姫・狂戦士は資料未着手のため未登録
+const SOURCE_DOC_URLS = {
+  '妖精': 'https://docs.google.com/document/d/1T2NTNx_eqcodWsTQq36lzT29p8OQo6V6M537Xz7txdo/edit?hl=ja&tab=t.0',
+  '牧師': 'https://docs.google.com/document/d/1hJBIvL84lfE9J955hsI3eiOH4e0tUprt1toqL2JbGMU/edit?tab=t.0',
+  '賢者': 'https://docs.google.com/document/d/1GhOvevp5wCXQ-PUqISENioP1VaV-kUj62PLq7rhs9wc/edit?tab=t.0',
+  '占い師': 'https://docs.google.com/document/d/1rPnt2PBYnOCfDR30AYYn3DA5bSEeaoZ_mHN9uU0zGMs/edit?tab=t.0',
+  '騎士': 'https://docs.google.com/document/d/1yJpD2tj1eo5prC8Nj2NAtYRlb2r3vvcBFCdZzzhO58U/edit?tab=t.0',
+  '勇者': 'https://docs.google.com/document/d/16sM0V8PGAWAzXiDZ_TYNmesOG6CMMBvHBUeK6NB9CD4/edit?usp=sharing',
+  '盗賊': 'https://docs.google.com/document/d/1_RGHIKus88p9VhpX8Z6T411aaQO5AOEq8ddFnfP7P2s/edit?usp=sharing',
+  '道化師': 'https://docs.google.com/document/d/10HwWXU4yII6Ki6CiZ5tRIvI72mFc0HQTUfUp0NBw1oc/edit?usp=sharing',
+  '忍者': 'https://docs.google.com/document/d/1Ecf5KJ9c5FZOg9U-o9WmTTwNgR_JHKPl9L1StFtlSbg/edit?usp=sharing',
+  '魔法戦士': 'https://docs.google.com/document/d/1cWivDq387P2BxHgGfJMi94uAkvl3Nx86sQAYdZ9TVV0/edit?usp=sharing',
+  '聖戦士': 'https://docs.google.com/document/d/1Q7vviVF6OgtwCfCW0CcNiWNPgPeFDa_cq5K62PMwmDA/edit?usp=sharing',
+  '兵士': 'https://docs.google.com/document/d/1s_Rchh1O3lQGVc4fX5t9lmQCdDSCH0N4zxIcm7plTGg/edit?usp=sharing',
+  '魔道士': 'https://docs.google.com/document/d/1v5ePCD1Dmab_T1lgMOinCB1qSvWQQ1JftG_yQydiIe0/edit?usp=sharing',
+};
+
+// avatarフォルダのPNGを参照（差し替え可能）。読み込み失敗時は絵文字にフォールバック
+function iconImg(t, cls){
+  const c = cls ? `icon ${cls}` : 'icon';
+  return `<img class="${c}" src="avatar/${t.file}.png" alt="${t.code}" `
+    + `onerror="this.outerHTML='<span class=&quot;${c} icon-fallback&quot;>${t.icon}</span>'">`;
+}
+
+let LIBRARY = [];
+let PAIR_INDEX = {};
+let selA = null; // null = TOP(HOME)画面
+let selB = null;
+
+function pairKey(a,b){ return [a,b].sort().join('|'); }
+
+fetch('data/compat_library.json')
+  .then(r => r.json())
+  .then(data => {
+    LIBRARY = data;
+    data.forEach(e => { PAIR_INDEX[pairKey(e.typeA, e.typeB)] = e; });
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('mainUI').style.display = 'block';
+    renderSidebar();
+    renderHomeGrid();
+    const total = TYPES.length*(TYPES.length+1)/2;
+    const statsText = `現在 ${data.length} / ${total} 通り収録済み`;
+    document.getElementById('statsBarHome').textContent = statsText;
+    document.getElementById('statsBar').textContent = statsText;
+    goHome();
+  })
+  .catch(err => {
+    document.getElementById('loading').textContent = '読み込みに失敗しました。data/compat_library.json を確認してください。';
+    console.error(err);
+  });
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+function goHome(){
+  selA = null;
+  selB = null;
+  document.getElementById('topAvatar').textContent = '🔮';
+  document.getElementById('topAvatar').style.backgroundImage = '';
+  document.getElementById('homeView').style.display = 'block';
+  document.getElementById('typeView').style.display = 'none';
+  renderSidebar();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function renderHomeGrid(){
+  const grid = document.getElementById('homeGrid');
+  grid.innerHTML = '';
+  TYPES.forEach(t => {
+    const d = document.createElement('div');
+    d.className = 'home-item';
+    d.innerHTML = `${iconImg(t)}<div class="name">${t.code}</div>`;
+    d.onclick = () => selectType(t);
+    grid.appendChild(d);
+  });
+}
+
+function selectType(t){
+  selA = t;
+  selB = null;
+  document.getElementById('homeView').style.display = 'none';
+  document.getElementById('typeView').style.display = 'block';
+  renderSidebar();
+  renderWelcome();
+  hideResult();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function renderSidebar(){
+  const list = document.getElementById('sideList');
+  list.innerHTML = '';
+  TYPES.forEach(t => {
+    const d = document.createElement('div');
+    d.className = 'side-item' + (selA && t.code===selA.code ? ' active' : '');
+    d.innerHTML = `${iconImg(t)}<span class="name">${t.code}</span>`;
+    d.onclick = () => selectType(t);
+    list.appendChild(d);
+  });
+}
+
+const TOC_COLLAPSE_LIMIT = 8;
+let tocExpanded = false;
+
+function renderWelcome(){
+  document.getElementById('welcomeIcon').outerHTML = iconImg(selA, 'w-icon').replace('class="icon w-icon"','class="icon w-icon" id="welcomeIcon"');
+  const topAv = document.getElementById('topAvatar');
+  topAv.textContent = '';
+  topAv.style.backgroundImage = `url('avatar/${selA.file}.png')`;
+  topAv.style.backgroundSize = 'cover';
+  topAv.style.backgroundPosition = 'center';
+  document.getElementById('welcomeTitle').textContent = `${selA.code}タイプ の相性`;
+  document.getElementById('tocOwnerName').textContent = selA.code;
+  tocExpanded = false;
+  renderTocList();
+}
+
+function renderTocList(){
+  const partners = TYPES.filter(t => t.code !== selA.code);
+  const row = document.getElementById('partnerRow');
+  const moreBtn = document.getElementById('tocMoreBtn');
+  row.innerHTML = '';
+  const shown = tocExpanded ? partners : partners.slice(0, TOC_COLLAPSE_LIMIT);
+
+  shown.forEach((t, idx) => {
+    const key = pairKey(selA.code, t.code);
+    const exists = !!PAIR_INDEX[key];
+    const item = document.createElement('div');
+    item.className = 'toc-item' + (exists ? '' : ' pending');
+    item.innerHTML = `<span class="toc-num">${idx+1}</span>${iconImg(t,'toc-icon')}` +
+      `<span class="toc-name">${selA.code} × ${t.code} タイプの相性</span>` +
+      `<span class="toc-mark">${exists?'✓':'執筆中'}</span>`;
+    if(exists){
+      item.onclick = () => { selB = t; showEntry(); };
+    }
+    row.appendChild(item);
+  });
+
+  if(partners.length > TOC_COLLAPSE_LIMIT){
+    moreBtn.style.display = 'block';
+    moreBtn.textContent = tocExpanded ? '▲ 閉じる' : `… もっと見る（残り${partners.length - TOC_COLLAPSE_LIMIT}件）`;
+  } else {
+    moreBtn.style.display = 'none';
+  }
+}
+
+function toggleTocMore(){
+  tocExpanded = !tocExpanded;
+  renderTocList();
+}
+
+const HEAD_KEYWORDS = ['ポイント','相性','あるある','まとめ','話し方','注意するべき','恋愛・結婚','友達としての','家族としての'];
+function looksLikeHeading(line){
+  if(line.length === 0 || line.length > 45) return false;
+  if(line.endsWith('。')) return false;
+  return HEAD_KEYWORDS.some(k => line.includes(k));
+}
+function renderContent(content){
+  const paras = content.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean);
+  let html = '';
+  let headIdx = 0;
+  const headings = [];
+  paras.forEach(p => {
+    const lines = p.split('\n').map(l=>l.trim()).filter(Boolean);
+    lines.forEach(line => {
+      if(looksLikeHeading(line)){
+        headIdx++;
+        const anchorId = `sec-${headIdx}`;
+        headings.push({id:anchorId, text:line});
+        html += `<div class="sec-h" id="${anchorId}">${escapeHtml(line)}</div>`;
+      } else {
+        html += `<p>${escapeHtml(line)}</p>`;
+      }
+    });
+  });
+  return { html, headings };
+}
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function hideResult(){
+  document.getElementById('article').style.display = 'none';
+  document.getElementById('missing').style.display = 'none';
+}
+
+function showEntry(){
+  if(!selB) return;
+  const key = pairKey(selA.code, selB.code);
+  const entry = PAIR_INDEX[key];
+  if(!entry){
+    document.getElementById('article').style.display = 'none';
+    document.getElementById('missing').style.display = 'block';
+    document.getElementById('missingDesc').textContent =
+      `「${selA.code}×${selB.code}」の詳細解説は現在ジョニーさんが執筆中です。届き次第このページに反映されます。`;
+    return;
+  }
+  document.getElementById('missing').style.display = 'none';
+  document.getElementById('article').style.display = 'block';
+  {
+    const artAv = document.getElementById('artAvatar');
+    const bType = TYPE_BY_NAME[entry.typeB];
+    if(bType){
+      artAv.textContent = '';
+      artAv.style.backgroundImage = `url('avatar/${bType.file}.png')`;
+      artAv.style.backgroundSize = 'cover';
+      artAv.style.backgroundPosition = 'center';
+    } else {
+      artAv.textContent = '❓';
+      artAv.style.backgroundImage = '';
+    }
+  }
+  document.getElementById('artTitle').textContent = `${entry.typeA} × ${entry.typeB}`;
+  const { html, headings } = renderContent(entry.content);
+  document.getElementById('artBody').innerHTML = html;
+  {
+    const srcEl = document.getElementById('artSource');
+    const links = [entry.typeA, entry.typeB]
+      .filter((code, i, arr) => arr.indexOf(code) === i) // 同タイプ同士(狂戦士×狂戦士等)は重複除去
+      .map(code => SOURCE_DOC_URLS[code]
+        ? `<a href="${SOURCE_DOC_URLS[code]}" target="_blank" rel="noopener">${code}タイプ資料</a>`
+        : `${code}タイプ資料（準備中）`)
+      .join(' ／ ');
+    srcEl.innerHTML = `出典: 恋愛式学 継承マスター資料（${entry.source}） ／ ${links}`;
+  }
+  renderSubToc(headings);
+  document.getElementById('article').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderSubToc(headings){
+  const subtocBox = document.getElementById('subtocBox');
+  const stickyToc = document.getElementById('stickyToc');
+  const subtocList = document.getElementById('subtocList');
+  const stickyTocList = document.getElementById('stickyTocList');
+
+  if(!headings.length){
+    subtocBox.style.display = 'none';
+    stickyToc.style.display = 'none';
+    return;
+  }
+
+  const buildItems = () => headings.map((h, i) => {
+    const item = document.createElement('div');
+    item.className = 'subtoc-item';
+    item.innerHTML = `<span class="st-num">${i+1}</span><span>${escapeHtml(h.text)}</span>`;
+    item.onclick = () => {
+      const target = document.getElementById(h.id);
+      if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+    };
+    return item;
+  });
+
+  subtocList.innerHTML = '';
+  buildItems().forEach(el => subtocList.appendChild(el));
+  subtocBox.style.display = 'block';
+
+  stickyTocList.innerHTML = '';
+  buildItems().forEach(el => stickyTocList.appendChild(el));
+  stickyToc.style.display = 'block';
+}
+
+function randomEntry(){
+  const entry = LIBRARY[Math.floor(Math.random()*LIBRARY.length)];
+  selA = TYPES.find(t=>t.code===entry.typeA) || {code:entry.typeA, icon:'❓'};
+  selB = TYPES.find(t=>t.code===entry.typeB) || {code:entry.typeB, icon:'❓'};
+  document.getElementById('homeView').style.display = 'none';
+  document.getElementById('typeView').style.display = 'block';
+  renderSidebar();
+  renderWelcome();
+  showEntry();
+}
+</script>
+</body>
+</html>

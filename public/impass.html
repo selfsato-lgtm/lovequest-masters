@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>インパス診断ツール|恋愛式学</title>
+<link rel="icon" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<style>
+  :root{ --se:#e0524d; --od:#e8b931; --so:#4caf7d; --ma:#5b7de0; --ink:#222; --sub:#777; --line:#e2e2e6; }
+  *{ box-sizing:border-box; }
+  body{ font-family:'Yu Gothic UI','Hiragino Sans','Meiryo',sans-serif; margin:0; color:var(--ink); background:#fafafa; }
+  header{ background:#1f2330; color:#fff; padding:14px 16px; }
+  header h1{ font-size:17px; margin:0; }
+  header p{ font-size:11.5px; margin:4px 0 0; color:#aab; }
+  header .official{ display:inline-block; margin-top:8px; font-size:12px; color:#fff; background:#e0524d; padding:6px 12px; border-radius:8px; text-decoration:none; }
+  header .official:hover{ background:#c8413c; }
+  header .portal-back{ display:inline-block; margin-bottom:8px; font-size:11.5px; color:#cdd; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25); padding:5px 12px; border-radius:16px; text-decoration:none; }
+  header .portal-back:hover{ color:#fff; border-color:#fff; }
+  .wrap{ max-width:980px; margin:0 auto; padding:12px; display:grid; grid-template-columns:1fr 340px; gap:14px; }
+  @media (max-width:820px){ .wrap{ grid-template-columns:1fr; } .panel{ position:static !important; } }
+  .cat{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-bottom:12px; }
+  .cat h2{ font-size:14px; margin:2px 0 8px; }
+  .catnote{ font-size:11px; color:#8a6d1f; background:#fff8e1; border:1px solid #f0dca0; border-radius:8px; padding:6px 9px; margin-bottom:8px; line-height:1.5; }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .chip{ font-size:12px; padding:6px 10px; border:1px solid #ccc; border-radius:16px; background:#fff; cursor:pointer; user-select:none; transition:.12s; }
+  .chip:hover{ border-color:#888; }
+  .chip.on{ background:#1f2330; color:#fff; border-color:#1f2330; }
+  .panel{ position:sticky; top:10px; align-self:start; }
+  .card{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:12px; }
+  .card h3{ font-size:13.5px; margin:0 0 8px; }
+  .barrow{ display:flex; align-items:center; gap:8px; margin:5px 0; font-size:12px; }
+  .barrow .nm{ width:62px; font-weight:700; }
+  .track{ flex:1; height:14px; background:#eee; border-radius:7px; overflow:hidden; }
+  .fill{ height:100%; border-radius:7px; transition:width .25s; }
+  .pt{ width:34px; text-align:right; color:var(--sub); }
+  .sun{ display:flex; height:14px; border-radius:7px; overflow:hidden; margin-top:6px; }
+  .sun div{ transition:width .25s; }
+  .sunlbl{ display:flex; justify-content:space-between; font-size:11px; color:var(--sub); margin-top:3px;}
+  #verdict{ text-align:center; }
+  #vname{ font-size:24px; font-weight:800; margin:4px 0 2px; }
+  #vsub{ font-size:12px; color:var(--sub); }
+  #vdesc{ font-size:12.5px; margin-top:8px; text-align:left; }
+  #conf{ font-size:11.5px; margin-top:6px; padding:4px 8px; border-radius:8px; background:#f1f3f8; display:inline-block; }
+  .cands{ margin-top:8px; }
+  .cand{ display:flex; justify-content:space-between; font-size:12.5px; padding:4px 8px; border-radius:8px; margin:3px 0; background:#f6f6f8; }
+  .cand b{ font-weight:700; }
+  .cand .pc{ color:var(--sub); }
+  .hint{ font-size:12px; line-height:1.65; }
+  .hint b{ color:#c2185b; }
+  .btns{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  button{ flex:1 1 45%; padding:9px; font-size:13px; border-radius:10px; border:1px solid #ccc; background:#fff; cursor:pointer; }
+  button:hover{ background:#f0f0f0; }
+  .cnt{ font-size:11.5px; color:var(--sub); text-align:center; margin-bottom:8px; }
+  footer{ text-align:center; font-size:11px; color:#999; padding:18px; }
+</style>
+</head>
+<body>
+<header>
+  <a class="portal-back" href="index.html">← ポータルへ戻る</a>
+  <h1>🔮 インパス診断ツール|恋愛式学タイプ判定</h1>
+  <p>プロフィール・写真・メッセージに現れたシグナルをタップ → リアルタイムで16タイプ候補が絞られます(ジョニー式・色分け可視化)</p>
+  <a class="official" href="https://personal-character-stg.web.app/" target="_blank" rel="noopener">🔗 恋愛式学 × パーソナル式学 4タイプ/16タイプ診断はこちら →</a>
+  <a class="official" href="aisho.html" style="background:#5b7de0;margin-left:6px">💞 相性診断ツールへ →</a>
+</header>
+<div class="wrap">
+  <main id="cats"></main>
+  <aside class="panel">
+    <div class="btns"><button onclick="resetAll()">🔄 リセット</button><button onclick="copyResult()">📋 結果をコピー</button><button onclick="exportData()">📤 エクスポート</button><button onclick="importData()">📥 インポート</button></div>
+    <div class="cnt" id="cnt">選択数: 0</div>
+    <div class="card">
+      <h3>📊 4タイプスコア</h3>
+      <div class="barrow"><span class="nm" style="color:var(--se)">⚔️戦士</span><div class="track"><div class="fill" id="bSE" style="background:var(--se);width:0%"></div></div><span class="pt" id="pSE">0</span></div>
+      <div class="barrow"><span class="nm" style="color:#b8941d">💃踊り子</span><div class="track"><div class="fill" id="bOD" style="background:var(--od);width:0%"></div></div><span class="pt" id="pOD">0</span></div>
+      <div class="barrow"><span class="nm" style="color:var(--so)">☩僧侶</span><div class="track"><div class="fill" id="bSO" style="background:var(--so);width:0%"></div></div><span class="pt" id="pSO">0</span></div>
+      <div class="barrow"><span class="nm" style="color:var(--ma)">🔮魔法使い</span><div class="track"><div class="fill" id="bMA" style="background:var(--ma);width:0%"></div></div><span class="pt" id="pMA">0</span></div>
+      <div style="margin-top:10px;font-size:12px;font-weight:700">☀️太陽 / 🌙月 バランス</div>
+      <div class="sun"><div id="sunF" style="background:#f5a623;width:50%"></div><div id="moonF" style="background:#6272c9;width:50%"></div></div>
+      <div class="sunlbl"><span id="sunP">太陽 50%</span><span id="moonP">月 50%</span></div>
+    </div>
+    <div class="card" id="verdict">
+      <h3>👑 判定候補</h3>
+      <div id="vname">---</div>
+      <div id="vsub">シグナルを選択してください</div>
+      <div id="conf" style="display:none"></div>
+      <div class="cands" id="cands"></div>
+      <div id="vdesc"></div>
+    </div>
+    <div class="card"><h3>🎯 攻略ワンポイント</h3><div class="hint" id="hint">主タイプが見えてくると、刺さる言葉・デート・NGが表示されます。</div></div>
+  </aside>
+</div>
+<footer>恋愛式学(ジョニー式)インパス・メソッド準拠|判定はあくまで仮説。会って答え合わせを。診断は半年〜1年で見直し推奨</footer>
+<script>
+const DATA = [
+ {c:"📸 写真・表情", items:[
+  ["笑顔全開・歯見せスマイル",{OD:2},0],
+  ["目が大きい・ぱっちり二重",{OD:1,SE:1},1],
+  ["目力が強い・鋭い目つき",{SE:2},2],
+  ["いつもニコニコ・よく笑う",{OD:2},3],
+  ["目が細め・切れ長",{MA:2},4],
+  ["目が笑ってない・無表情",{MA:1.5,SO:.5},5],
+  ["ほんわり・おっとりした顔",{SO:2},6],
+  ["ポーカーフェイス・クール",{MA:2},7],
+  ["姿勢が良い・キリッとしてる",{SE:1.5},8],
+  ["人との写真・イベント写真が多い",{OD:1.5,SE:.5},9],
+  ["一人写真中心・引き・横顔",{MA:1.5,SO:.5},10],
+  ["アップの自撮りが多い",{SE:1,OD:1},11],
+  ["映え背景(花畑・海・カフェ)込みの写真",{OD:2},12],
+  ["動物・ペット・風景の写真",{SO:1.5},13],
+  ["友達との集合写真",{SO:1,OD:1},14],
+  ["SNSの更新頻度が高い",{OD:2},72]
+ ]},
+ {c:"👗 服装・見た目", items:[
+  ["派手・個性的・ハイブランド",{SE:2},15],
+  ["パステルカラー・ワンピース",{OD:2},16],
+  ["シンプル・単色・モノトーンコーデ",{MA:2},17],
+  ["地味め・ベージュや黒・質素",{SO:1.5,MA:.5},18],
+  ["露出多め(ノースリーブ等)",{SE:1},19],
+  ["黒髪",{MA:1,SO:.5},20],
+  ["髪色明るめ",{OD:1,SE:1},21]
+ ]},
+ {c:"💼 職業", note:"⚠️職業による分類は100%絶対ではありません。置かれた役割によって後天的にその役割を演じているケースもあるため、あくまで本質キャラクターを導く「手がかり(ヒント)」とし、他のカテゴリと組み合わせて仮説を立ててください。", items:[
+  ["経営・フリーランス・営業・管理職",{SE:2},22],
+  ["警察・自衛隊・体育会系",{SE:2},23],
+  ["接客・美容・アパレル・CA・イベント・芸能",{OD:2},24],
+  ["保育・看護・介護・福祉・教育",{SO:2},25],
+  ["事務・経理・公務員・秘書",{SO:1.5},26],
+  ["研究・IT・設計・デザイナー・士業・医師",{MA:2},27]
+ ]},
+ {c:"🎯 趣味・好みカード", items:[
+  ["テーマパーク・フェス・映えスポット",{OD:2},28],
+  ["グルメ・食べ歩き・飲み会・カフェ巡り",{OD:1.5},29],
+  ["一人旅・ひとり時間が大切",{MA:2},30],
+  ["映画は考察・伏線・設定派",{MA:2},31],
+  ["感動系・泣ける映画が好き",{OD:1.5,SO:.5},32],
+  ["アニメ・ゲーム・オタク趣味",{MA:1.5},33],
+  ["ジム・筋トレ・ランニング・サウナ",{SE:2},34],
+  ["ゴルフ・スポーツ観戦・勝負事",{SE:1.5},35],
+  ["ヨガ・散歩・温泉・神社",{SO:1.5},36],
+  ["読書・カメラ・美術館",{MA:1.5},37],
+  ["料理・お菓子作り",{SO:1,OD:.5},38],
+  ["動物・ペットが好き",{SO:1.5},39],
+  ["猫派・猫を飼っている",{MA:1.5,SO:.5},70],
+  ["犬派・犬を飼っている",{OD:1.5,SO:.5},71],
+  ["旅行は計画をしっかり立てる派",{MA:1,SO:1},40],
+  ["ノープラン・行き当たりばったり派",{OD:1.5,SE:.5},41]
+ ]},
+ {c:"✍️ プロフィール文章のワード", items:[
+  ["楽しい・笑・ワクワク・一緒に楽しみたい",{OD:2},42],
+  ["絵文字/顔文字が多い・テンション高い",{OD:1.5},43],
+  ["安心・思いやり・穏やか・支え合う・寄り添う",{SO:2},44],
+  ["価値観・感性・理解・深い話・知的好奇心",{MA:2},45],
+  ["成長・挑戦・目標・向上心・高め合う",{SE:2},46],
+  ["「マイペース」と自称",{MA:1.5},47],
+  ["「バランスよく」「インドアもアウトドアも」",{SO:1,OD:.5},48],
+  ["過去→現在→未来のストーリー構成",{SE:1.5},49],
+  ["文章が短い・あっさり",{SO:1,MA:.5},50],
+  ["文章が長い・情報盛りだくさん",{OD:1,SE:.5},51],
+  ["項目をきっちり分けて書いている",{MA:1.5},52],
+  ["「仲良くなってから会いたい」",{SO:3},53],
+  ["条件・NGをはっきり書いている",{MA:1,SE:.5},54],
+  ["「時間を大切に」「目的が同じ人と」",{SE:1.5,MA:.5},55],
+  ["抽象的な表現を使う",{MA:2},73],
+  ["常に学ぶ姿勢が伝わる",{SE:2},74]
+ ]},
+ {c:"💬 メッセージ・言動", items:[
+  ["返信が短文で率直",{SE:1.5,MA:.5},56],
+  ["即断即決・希望をはっきり言う",{SE:2},57],
+  ["進捗確認・段取りをしてくる",{SE:1,MA:1},58],
+  ["気遣いのある丁寧な返信",{SO:1.5},59],
+  ["ノリとテンポ・スタンプ多め",{OD:2},60],
+  ["返信マイペース・自分の世界がある",{MA:1},61],
+  ["「みんなで」「友達と」が多い",{OD:1,SO:1},62],
+  ["敬語をなかなか崩さない",{SO:1,MA:.5},63],
+  ["大人数より少人数派と言う",{MA:1,SO:1},64],
+  ["(対面)声が大きい・リアクション大",{SE:1,OD:1},65],
+  ["(対面)声が小さい・控えめ",{SO:1.5},66],
+  ["甘え上手・かまってアピール",{OD:1.5},67],
+  ["デート前に会うことに慎重・様子見",{SO:1.5,MA:.5},68],
+  ["「2回目も会いたい」と即OK",{MA:2,SE:.5},69],
+  ["初対面でも会話が弾む",{OD:2},75],
+  ["感謝をきちんと言葉にする",{SO:2},76],
+  ["落ち着いた場所で深い対話を好む",{MA:2},77],
+  ["妥協を嫌う・譲らない",{SE:2},78]
+ ]}
+];
+// ★ID(各itemの3番目)はビット位置=永久不変の背番号。カテゴリの範囲とは無関係。
+//   新項目は必ず未使用の最大ID+1を振ること(既存IDは絶対に変えない)。次の空きID=79。
+const TYPES={SE:"戦士",OD:"踊り子",SO:"僧侶",MA:"魔法使い"};
+const PURE={SE:["狂戦士","ESTJ","裏表ゼロの直球エネルギー。目標に一直線、アプローチもド直球。"],OD:["姫","ESFP","天真爛漫で愛され体質。協調性ありそうで実は「私が主役」。"],SO:["シスター","ISFJ","究極の癒しと献身。場の平和を静かに守る。"],MA:["魔道士","INTP","探求と論理の人。本質以外に興味なし。"]};
+const COMBO={"SE,OD":["勇者","ESTP","熱量と愛嬌のリーダー。みんなのために前進する人気者。"],"SE,MA":["魔法戦士","ENTJ","目標達成×分析思考。効率よく結果を出す指揮官。"],"SE,SO":["聖戦士","ENFJ","情熱と協調性の両立。仲間のために戦う。"],"OD,SE":["騎士","ENFP","ノリと行動力のムードメーカー。"],"OD,SO":["妖精","ESFJ","明るく優しい協調派。場を和ませる。"],"OD,MA":["盗賊","ENTP","愛嬌の裏に独自の世界観。天然で言葉選びが独特な二面性。"],"SO,SE":["兵士","INFJ","縁の下で支えつつ芯が強い。"],"SO,OD":["牧師","INFP","尽くす愛情派。YESマンで和を作るが本音を言えない。"],"SO,MA":["賢者","ISTJ","静かで誠実な知恵者。もめごとのない安定感。"],"MA,SE":["忍者","INTJ","静かな戦略家。3年5年10年の計画を着実に遂行。"],"MA,SO":["占い師","ISFP","一見太陽に見えるフェイク持ちの穏やかな観察者。掴みどころがない。"],"MA,OD":["道化師","ISTP","あざとさとセンスを操る知的エンターテイナー。"]};
+const HINTS={
+ SE:"<b>刺さる言葉:</b>「さすが!」「頼もしい」「あなただから頼みたい」— 成果と夢をリスペクト。<br><b>デート:</b>活気ある店・体験/スポーツ系・高級店の特別感。<br><b>NG:</b>優柔不断・モタモタ、理屈で論破、熱意を「重い」と言う。<br><b>📱連絡:</b>即レス・テンポ重視・自己主張してOK。束縛/監視はNG。<br><b>🎁褒め/贈り物:</b>会って10秒で「褒め+感想+質問」。努力や自己投資を、他人が褒めない一面ごと。サプライズは大勢の前で派手に・体験型を。<br><b>🧮コミュ式 ×(掛け算):</b>称賛とリアクションを増幅して返す。<br><b>⚠️裏の顔/地雷:</b>邪魔・否定されると潰したくなる。高圧的になり自滅も。浮気・略奪に走りやすい一面。強気の奥に弱音を吐く繊細さも。",
+ OD:"<b>刺さる言葉:</b>「一緒にいると楽しい」「その気持ちわかる!」— まず共感、感情を受け取る。<br><b>デート:</b>体験型・映えスポット・テンポの良いお店。ノリに乗れるかが鍵。<br><b>NG:</b>ロジカル詰め・管理や束縛・リアクション薄。<br><b>📱連絡:</b>毎日・絵文字/ハート・他愛ない話でラリー継続。返信遅いと不安に。<br><b>🎁褒め/贈り物:</b>10秒で外見も内面も褒めてOK。見えない努力も。ドキドキ・秘密の共有・振り幅のある演出が効く。<br><b>🧮コミュ式 ＋(足し算):</b>共感を足し続ける。<br><b>⚠️裏の顔/地雷:</b>共感されないと急に冷め嫌う。熱しやすく冷めやすい。寂しさから「好き好き」で流されやすい一面。盛り上げ役の裏で実は繊細。",
+ SO:"<b>刺さる言葉:</b>「いつも支えてくれて助かる」「一緒にいると安心する」— 目立たぬ貢献に気づく。<br><b>デート:</b>落ち着いたカフェ・個室・自然散歩。丁寧な敬語スタートで安心空間を。初回はディナーよりランチ・会話5:5。<br><b>NG:</b>騒がしい店・急かす・命令口調・ガツガツ。<br><b>📱連絡:</b>レスは遅め・受動型。急に敬語を外す/馴れ馴れしい/彼氏ヅラは困惑される。<br><b>🎁褒め/贈り物:</b>10秒の褒めは謙遜で終わる→「見てないところの頑張り」を誠実に。お金をかけない気持ちのこもった贈り物を。<br><b>🧮コミュ式 ÷(割り算):</b>押し付けず相手に合わせ調和。<br><b>⚠️裏の顔/地雷:</b>本音を言えず溜め込む。自己主張を急かす・変化を求めると萎縮。安定を失う恐れに敏感。理解より回数を急ぐと保留される。<br><b>🔑確定シグナル:</b>「仲良くなってから会いたい」はほぼ100%僧侶(95〜98%、消去法で確定)。ポジティブサインなので焦らず会話を続け再度誘う。「もう少し仲良くなってから」もOKサイン。誘い方はOne-Two-Threeより共通点から自然な流れで。",
+ MA:"<b>刺さる言葉:</b>「センスいいね(必ず理由つき)」「その視点すごい」— 安易な褒めはNG、納得が大事。<br><b>デート:</b>世界観のあるカフェ・美術館・考察トーク。店選びの「なぜ」を語れると◎。マイペースに合わせすぎず「何を」でリード。<br><b>NG:</b>知ったかぶり・浅いノリ・馴れ馴れしく距離を詰める。<br><b>📱連絡:</b>簡潔に・結論先・優柔不断はNG・彼氏ヅラ厳禁。必要以上の連絡は不要。<br><b>🎁褒め/贈り物:</b>10秒で褒めたら試合終了。理由とセンスを添え内面を。サプライズより「一緒に買いに行く」。<br><b>🧮コミュ式 −(引き算):</b>無駄をそぎ簡潔に。<br><b>⚠️裏の顔/地雷:</b>安易な称賛・距離の詰めすぎ・知ったかぶりで一発アウト。世界観を押し付け合うと急に壊れる。ドライだが懐に入ればツンデレ。<br><b>🔑確定シグナル:</b>2回目のデートに来たら脈あり確定(無駄を嫌うので「なんとなく」では来ない・0か100か)。誘いに迷いなく即OKも同様。初回デートで「友達ってどんな友達?」と聞くと相手の先天タイプが分かる(友達が戦士系なら本人も戦士寄り)。"
+};
+const state=new Set();
+const main=document.getElementById("cats");
+DATA.forEach((cat,ci)=>{
+  const d=document.createElement("div"); d.className="cat";
+  d.innerHTML=`<h2>${cat.c}</h2>` + (cat.note ? `<div class="catnote">${cat.note}</div>` : "");
+  const ch=document.createElement("div"); ch.className="chips";
+  cat.items.forEach((it,ii)=>{
+    const b=document.createElement("span"); b.className="chip"; b.textContent=it[0];
+    const key=ci+"_"+ii;
+    b.onclick=()=>{ b.classList.toggle("on"); state.has(key)?state.delete(key):state.add(key); calc(); };
+    b.dataset.key=key; ch.appendChild(b);
+  });
+  d.appendChild(ch); main.appendChild(d);
+});
+// ラベル→キーの逆引き(旧形式コードの読み込み用)
+const LABEL2KEY={};
+DATA.forEach((cat,ci)=> cat.items.forEach((it,ii)=> LABEL2KEY[it[0]]=ci+"_"+ii ));
+// フラットインデックス(エクスポート/インポートのビットマスク用。項目は末尾追加なら互換維持)
+const FLAT=[];
+DATA.forEach((cat,ci)=> cat.items.forEach((it,ii)=> FLAT.push(ci+"_"+ii) ));
+function calc(){
+  const s={SE:0,OD:0,SO:0,MA:0};
+  state.forEach(k=>{ const [ci,ii]=k.split("_").map(Number); const w=DATA[ci].items[ii][1]; for(const t in w) s[t]+=w[t]; });
+  const tot=s.SE+s.OD+s.SO+s.MA;
+  for(const t of ["SE","OD","SO","MA"]){
+    document.getElementById("b"+t).style.width=(tot? (s[t]/tot*100):0)+"%";
+    document.getElementById("p"+t).textContent=s[t].toFixed(1).replace(/\.0$/,"");
+  }
+  const sun=s.SE+s.OD, moon=s.SO+s.MA;
+  const sp=tot? Math.round(sun/tot*100):50;
+  document.getElementById("sunF").style.width=sp+"%";
+  document.getElementById("moonF").style.width=(100-sp)+"%";
+  document.getElementById("sunP").textContent="☀️太陽 "+sp+"%";
+  document.getElementById("moonP").textContent="🌙月 "+(100-sp)+"%";
+  document.getElementById("cnt").textContent="選択数: "+state.size;
+  const vn=document.getElementById("vname"), vs=document.getElementById("vsub"), vd=document.getElementById("vdesc"), cf=document.getElementById("conf"), cd=document.getElementById("cands"), hint=document.getElementById("hint");
+  if(state.size<3){ vn.textContent="---"; vs.textContent="シグナルを3つ以上選択してください"; vd.innerHTML=""; cf.style.display="none"; cd.innerHTML=""; hint.innerHTML="主タイプが見えてくると、刺さる言葉・デート・NGが表示されます。"; return; }
+  const order=Object.keys(s).sort((a,b)=>s[b]-s[a]);
+  const cands=[];
+  for(const a of order) for(const b of order){ if(a!==b && s[a]>0) cands.push({k:a+","+b, sc:s[a]*1.6+s[b]}); }
+  for(const a of order){ if(s[a]>0) cands.push({k:a, sc:s[a]*2.0, pure:true}); }
+  cands.sort((x,y)=>y.sc-x.sc);
+  const top=cands.slice(0,4);
+  const best=top[0];
+  const info=best.pure? PURE[best.k] : COMBO[best.k];
+  const comp=best.pure? TYPES[best.k]+"のド直球" : TYPES[best.k.split(",")[0]]+"×"+TYPES[best.k.split(",")[1]];
+  vn.textContent=info[0];
+  vs.textContent=comp+"|MBTI近似: "+info[1];
+  vd.innerHTML="💡 "+info[2];
+  const gap=s[order[0]]-s[order[1]];
+  let conf="🔥 有力候補", bg="#fdeaea";
+  if(state.size<6){ conf="🌱 まだ仮説段階(シグナル追加で精度UP)"; bg="#f1f3f8"; }
+  else if(gap>=4){ conf="🎯 確度高め(主タイプ明確)"; bg="#e8f6ee"; }
+  else if(gap<1.5){ conf="⚖️ 接戦中(主タイプが拮抗)"; bg="#fff7e0"; }
+  cf.textContent=conf; cf.style.background=bg; cf.style.display="inline-block";
+  cd.innerHTML=top.map((c,i)=>{
+    const inf=c.pure? PURE[c.k]:COMBO[c.k];
+    const nm=c.pure? TYPES[c.k]+"ド直球":TYPES[c.k.split(",")[0]]+"×"+TYPES[c.k.split(",")[1]];
+    const pc=Math.round(c.sc/top[0].sc*100);
+    return `<div class="cand" style="opacity:${1-i*0.16}"><span>${i+1}位 <b>${inf[0]}</b> <small>${nm}</small></span><span class="pc">${pc}%</span></div>`;
+  }).join("");
+  hint.innerHTML=HINTS[order[0]] + (gap<1.5? "<br><br>⚖️ <b>"+TYPES[order[0]]+"と"+TYPES[order[1]]+"が拮抗中。</b>会話で「なぜ好きか(動機)」を聞いて絞り込みを。":"");
+}
+function resetAll(){ state.clear(); document.querySelectorAll(".chip.on").forEach(c=>c.classList.remove("on")); calc(); }
+function applySelection(labels){
+  state.clear(); document.querySelectorAll(".chip.on").forEach(c=>c.classList.remove("on"));
+  let hit=0, miss=0;
+  labels.forEach(label=>{
+    const key=LABEL2KEY[label];
+    if(key){ state.add(key); const chip=document.querySelector('.chip[data-key="'+key+'"]'); if(chip) chip.classList.add("on"); hit++; }
+    else miss++;
+  });
+  calc();
+  return {hit,miss};
+}
+function exportData(){
+  if(state.size===0){ alert("先にシグナルを選択してください"); return; }
+  let bits=0n;
+  state.forEach(k=>{ const gi=FLAT.indexOf(k); if(gi>=0) bits|=(1n<<BigInt(gi)); });
+  const code="IM-"+bits.toString(16);
+  navigator.clipboard.writeText(code).then(
+    ()=>alert("診断コードをコピーしました📤\n"+code+"\n\nメモやLINEに保存すれば、インポートで同じ選択を復元できます。"),
+    ()=>window.prompt("以下の診断コードをコピーして保存してください📤", code)
+  );
+}
+function importData(){
+  const input=window.prompt("診断コードを貼り付けてください📥");
+  if(!input) return;
+  const raw=input.trim();
+  // 旧形式(IMPASS1:ラベルJSON)も読めるよう後方互換
+  if(/^IMPASS1:/.test(raw)){
+    try{
+      const labels=JSON.parse(decodeURIComponent(atob(raw.replace(/^IMPASS1:/,""))));
+      if(!Array.isArray(labels)) throw 0;
+      const {hit,miss}=applySelection(labels);
+      alert("インポート完了📥 "+hit+"件を復元"+(miss?"("+miss+"件スキップ)":""));
+    }catch(e){ alert("コードが正しくありません。"); }
+    return;
+  }
+  let bits;
+  try{ bits=BigInt("0x"+raw.replace(/^IM-/,"")); }
+  catch(e){ alert("コードが正しくありません。コピーし直してください。"); return; }
+  const labels=[];
+  for(let gi=0; gi<FLAT.length; gi++){
+    if((bits>>BigInt(gi))&1n){ const [ci,ii]=FLAT[gi].split("_").map(Number); labels.push(DATA[ci].items[ii][0]); }
+  }
+  const {hit,miss}=applySelection(labels);
+  alert("インポート完了📥 "+hit+"件を復元しました"+(miss?"("+miss+"件はスキップ)":""));
+}
+function copyResult(){
+  const s={SE:0,OD:0,SO:0,MA:0};
+  state.forEach(k=>{ const [ci,ii]=k.split("_").map(Number); const w=DATA[ci].items[ii][1]; for(const t in w) s[t]+=w[t]; });
+  const picked=[...state].map(k=>{ const [ci,ii]=k.split("_").map(Number); return DATA[ci].items[ii][0]; });
+  const txt="【インパス診断】"+document.getElementById("vname").textContent+"("+document.getElementById("vsub").textContent+")\n戦士"+s.SE+"/踊り子"+s.OD+"/僧侶"+s.SO+"/魔法使い"+s.MA+"\n選択: "+picked.join("、");
+  navigator.clipboard.writeText(txt).then(()=>alert("結果をコピーしました"));
+}
+calc();
+
+// クエストシステム(dashboard.html)と同じlocalStorage('lqm')を共有し、
+// このページを開くたびにインパス診断回数を自動加算する（経験値・分析力の自動計算に使われる）
+(function trackImpassView(){
+  try{
+    const raw = localStorage.getItem('lqm');
+    const st = raw ? JSON.parse(raw) : {};
+    st.impassCount = (st.impassCount||0) + 1;
+    localStorage.setItem('lqm', JSON.stringify(st));
+  }catch(e){ /* localStorage不可時は何もしない */ }
+})();
+</script>
+</body>
+</html>

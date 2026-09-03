@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>LOVEQUEST MASTERS</title>
+<meta name='impact-site-verification' value='9ac49756-a681-42b2-ab1d-b62f6751072c'>
+<link rel="icon" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<style>
+:root{
+  --bg:#080814; --card:#1A1A35; --card2:#12122A;
+  --gold:#F5A623; --red:#E94560; --blue:#4A9EDB;
+  --green:#4CAF73; --purple:#7B5EA7;
+  --white:#FFFFFF; --light:#E0E0E0; --muted:#8888AA;
+}
+html,body{height:100%}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Yu Gothic UI','Hiragino Sans','Meiryo',sans-serif;
+  background:var(--bg);color:var(--light)}
+
+/* ===== HERO ===== */
+.hero{position:relative;height:56vh;min-height:340px;max-height:560px;overflow:hidden;
+  background:#0a0a1a}
+
+.hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.hero-still{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;
+  opacity:0;transition:opacity 1.6s ease}
+.hero-still.show{opacity:1}
+
+@media(max-width:600px){
+  /* 画面のほぼ全高まで動画エリアを拡張し、下に黒い余白が残らないようにする */
+  .hero{height:90vh;min-height:600px;max-height:none}
+  /* 動画は上部が暗い夜空・ドラゴンは下寄りの構図のため、ズーム+下寄せで
+     ドラゴンが画面に大きく収まるようにクロップ位置を調整する */
+  .hero-video{transform:scale(1.55);transform-origin:center 78%}
+}
+
+.hero-scrim{position:absolute;inset:0;z-index:2;
+  background:linear-gradient(180deg, rgba(8,8,20,.55) 0%, rgba(8,8,20,.25) 35%, rgba(8,8,20,.35) 65%, rgba(8,8,20,.85) 100%)}
+
+.hero-content{position:relative;z-index:5;height:100%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:0 16px}
+
+@media(max-width:600px){
+  /* コンテンツを中央でなく下寄せにして、scrollヒントと下の冒険の書セクションの間の余白を詰める */
+  .hero-content{justify-content:flex-end;padding-bottom:24px}
+  .wrap{padding-top:0}
+}
+.hero-title{font-size:clamp(30px,7vw,54px);font-weight:900;color:var(--gold);
+  letter-spacing:2px;text-shadow:0 0 24px rgba(245,166,35,.5)}
+.hero-sub{font-size:13px;color:var(--muted);margin-top:10px;letter-spacing:3px}
+.hero-tagline{font-size:12.5px;color:var(--light);margin-top:16px;max-width:480px;line-height:1.8}
+
+.sound-toggle{position:absolute;top:16px;right:16px;z-index:10;
+  background:rgba(18,18,42,.7);border:1px solid #3a3a5a;border-radius:20px;
+  padding:8px 16px;font-size:12px;color:var(--light);cursor:pointer;
+  display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px)}
+.sound-toggle:hover{border-color:var(--gold)}
+
+.reload-btn{position:absolute;top:58px;right:16px;z-index:10;
+  background:rgba(18,18,42,.7);border:1px solid #3a3a5a;border-radius:20px;
+  padding:8px 16px;font-size:12px;color:var(--light);cursor:pointer;
+  display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px)}
+.reload-btn:hover{border-color:var(--gold)}
+
+.scroll-hint{margin-top:22px;font-size:12px;color:var(--white);cursor:pointer;
+  padding:6px 14px;animation:bob 1.8s ease-in-out infinite;
+  -webkit-tap-highlight-color:transparent}
+.scroll-hint:hover{color:var(--gold)}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* ===== TOOLS GRID ===== */
+.wrap{max-width:880px;margin:0 auto;padding:36px 16px 30px}
+.section-title{font-size:18px;font-weight:900;color:var(--white);text-align:center;margin-bottom:6px}
+.section-sub{font-size:11.5px;color:var(--muted);text-align:center;margin-bottom:26px}
+
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.tool-card{background:var(--card);border:1px solid #2a2a4a;border-radius:16px;padding:18px;
+  text-decoration:none;color:var(--light);display:flex;flex-direction:column;gap:8px;
+  transition:.15s}
+.tool-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+.tool-card-disabled{cursor:default;opacity:.85}
+.tool-card-disabled:hover{border-color:#2a2a4a;transform:none}
+.coming-soon{align-self:flex-start;font-size:10px;font-weight:900;padding:3px 11px;
+  border-radius:10px;margin-top:4px;border:1.5px solid var(--red);color:var(--red)}
+.tool-card .tc-icon{font-size:30px}
+.tool-card .tc-title{font-size:14px;font-weight:900;color:var(--white)}
+.tool-card .tc-desc{font-size:11.5px;color:var(--muted);line-height:1.6}
+.tool-card .tc-tag{align-self:flex-start;font-size:9.5px;padding:2px 9px;border-radius:10px;
+  margin-top:4px}
+.tag-live{background:#0D1F0D;color:var(--green);border:1px solid var(--green)}
+.tag-doc{background:#1A1A35;color:var(--blue);border:1px solid var(--blue)}
+
+footer{text-align:center;font-size:10.5px;color:#555570;padding:12px 20px}
+
+.account-bar{display:flex;justify-content:flex-end;align-items:center;gap:10px;
+  padding:8px 16px;font-size:11.5px;color:var(--muted)}
+.account-bar a, .account-bar button{background:rgba(255,255,255,.06);border:1px solid #3a3a5a;
+  border-radius:20px;padding:6px 14px;font-size:11.5px;color:var(--light);text-decoration:none;
+  cursor:pointer;font-family:inherit}
+.account-bar a:hover, .account-bar button:hover{border-color:var(--gold);color:var(--gold)}
+.auth-banner{max-width:640px;margin:10px auto 0;padding:10px 16px;border-radius:12px;
+  font-size:12px;text-align:center;background:rgba(233,69,96,.12);border:1px solid var(--red);color:var(--light)}
+</style>
+</head>
+<body>
+
+<div id="accountBar" class="account-bar"></div>
+<div id="authBanner" class="auth-banner" style="display:none"></div>
+
+<div class="hero">
+  <button class="sound-toggle" id="soundToggle">🔇 BGM: OFF</button>
+  <button class="reload-btn" id="reloadBtn">🔄 RELOAD</button>
+  <video class="hero-video" id="heroVideo" autoplay muted loop playsinline>
+    <source src="assets/dragon.mp4" type="video/mp4">
+  </video>
+  <img class="hero-still" id="heroStill" src="assets/party_and_castle.jpg" alt="">
+  <div class="hero-scrim"></div>
+  <div class="hero-content">
+    <div class="hero-title">LOVEQUEST MASTERS</div>
+    <div class="hero-sub">恋愛式学 × RPG冒険譚</div>
+    <div class="hero-tagline">タイプを見極め、仲間を集め、己の人生により良い絆を築け。<br>ここに揃うのは、あなたの冒険を導く最強のツールだ。</div>
+    <div class="scroll-hint" id="scrollHint">↓ scroll</div>
+  </div>
+</div>
+
+<audio id="bgm" loop preload="none">
+  <source src="assets/bgm.mp3" type="audio/mpeg">
+</audio>
+
+<div class="wrap">
+  <div class="section-title" id="questSection">🗺️ ツール</div>
+  <div class="section-sub">手にする力で、運命は変わる</div>
+
+  <div class="tool-grid">
+    <a class="tool-card" href="dashboard.html">
+      <div class="tc-icon">⚔️</div>
+      <div class="tc-title">RPGクエストシステム</div>
+      <div class="tc-desc">冒険の書（あなたの経験値の記録）</div>
+      <div class="tc-tag tag-live">稼働中</div>
+    </a>
+
+    <a class="tool-card" href="impass.html">
+      <div class="tc-icon">🧭</div>
+      <div class="tc-title">インパス診断ツール</div>
+      <div class="tc-desc">相手のタイプを判定（プロファイリング実践ツール）</div>
+      <div class="tc-tag tag-live">稼働中</div>
+    </a>
+
+    <a class="tool-card" href="aisho.html">
+      <div class="tc-icon">💞</div>
+      <div class="tc-title">相性診断ツール</div>
+      <div class="tc-desc">自分×相手の相性を診断</div>
+      <div class="tc-tag tag-live">稼働中</div>
+    </a>
+
+    <a class="tool-card" href="https://ai-johnny-backend-pi.vercel.app/" target="_blank" rel="noopener">
+      <div class="tc-icon">🧠</div>
+      <div class="tc-title">AIジョニー</div>
+      <div class="tc-desc">AIジョニーになんでも相談</div>
+      <div class="tc-tag tag-live">稼働中</div>
+    </a>
+  </div>
+
+  <div class="section-title" style="margin-top:40px">📖 マニュアル</div>
+  <div class="section-sub">先人の知恵を、我が糧とせよ</div>
+
+  <div class="tool-grid">
+    <a class="tool-card" href="player_encyclopedia.html">
+      <div class="tc-icon">📖</div>
+      <div class="tc-title">プレイヤー図鑑</div>
+      <div class="tc-desc">プレイヤーのタイプ解説書</div>
+      <div class="tc-tag tag-live">稼働中</div>
+    </a>
+
+    <a class="tool-card" href="compatibility_library.html">
+      <div class="tc-icon">📚</div>
+      <div class="tc-title">相性ライブラリ（16タイプ×256相性）</div>
+      <div class="tc-desc">自分×相手の特性と相性の解説書</div>
+      <div class="tc-tag tag-live">稼働中</div>
+    </a>
+
+    <a class="tool-card" href="spells_33.html">
+      <div class="tc-icon">📜</div>
+      <div class="tc-title">33の呪文</div>
+      <div class="tc-desc">呪文の解説書</div>
+      <div class="tc-tag tag-live">稼働中</div>
+    </a>
+  </div>
+</div>
+
+<footer>LOVEQUEST MASTERS — 恋愛式学(ジョニー式) × RPGコミュニティ<br><span style="opacity:.5">v2.1</span></footer>
+
+<script>
+// ─── ログイン状態の表示 ───
+(async () => {
+  const params = new URLSearchParams(location.search);
+  const banner = document.getElementById('authBanner');
+  const bannerMessages = {
+    inactive: 'このアカウントは現在、閲覧が制限されています。お支払い状況をご確認のうえ、ジョニーさんまでご連絡ください。',
+    failed: 'ログインに失敗しました。もう一度お試しください。',
+    cancelled: 'ログインがキャンセルされました。',
+  };
+  const loginParam = params.get('login');
+  if(loginParam && bannerMessages[loginParam]){
+    banner.textContent = bannerMessages[loginParam];
+    banner.style.display = 'block';
+  }
+
+  const accountBar = document.getElementById('accountBar');
+  try{
+    const res = await fetch('/api/auth/me');
+    const data = await res.json();
+    if(data.loggedIn){
+      accountBar.innerHTML = `<span>${data.email}</span><a href="/api/auth/logout">ログアウト</a>`;
+    } else {
+      accountBar.innerHTML = `<a href="/api/auth/start">🔐 Googleでログイン</a>`;
+    }
+  }catch(e){
+    accountBar.innerHTML = `<a href="/api/auth/start">🔐 Googleでログイン</a>`;
+  }
+})();
+
+// ドラゴン動画は常にループさせたまま(止まって見える瞬間を作らない)、
+// 1周し終えたタイミングだけをtimeupdateで検知して、静止画（城とパーティー）にフェードインする
+(() => {
+  const video = document.getElementById('heroVideo');
+  const still = document.getElementById('heroStill');
+  let looped = false;
+  let lastTime = 0;
+  video.addEventListener('timeupdate', () => {
+    if(!looped && video.currentTime < lastTime - 0.5){
+      looped = true;
+      still.classList.add('show');
+    }
+    lastTime = video.currentTime;
+  });
+})();
+
+// スクロールヒント: クリックで「冒険の書」セクションを画面先頭にスクロール
+document.getElementById('scrollHint').addEventListener('click', () => {
+  document.getElementById('questSection').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+// リロードボタン(ホーム画面追加時のスタンドアロン表示にはブラウザのリロードUIがないため)
+document.getElementById('reloadBtn').addEventListener('click', () => {
+  location.href = location.pathname + '?t=' + Date.now();
+});
+
+// BGM トグル(デフォルトミュート)
+const bgm = document.getElementById('bgm');
+const toggle = document.getElementById('soundToggle');
+let playing = false;
+
+toggle.addEventListener('click', () => {
+  if(!playing){
+    bgm.volume = 0.35;
+    bgm.play().then(() => {
+      playing = true;
+      toggle.textContent = '🔊 BGM: ON';
+    }).catch(() => {
+      toggle.textContent = '⚠️ BGM未設定';
+    });
+  } else {
+    bgm.pause();
+    playing = false;
+    toggle.textContent = '🔇 BGM: OFF';
+  }
+});
+</script>
+</body>
+</html>

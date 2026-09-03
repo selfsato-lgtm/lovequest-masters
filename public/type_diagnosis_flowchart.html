@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>タイプ診断フローチャート | LOVEQUESTプレイヤー図鑑</title>
+<style>
+:root{
+  --bg:#0D0D1A; --card:#1A1A35; --card2:#12122A;
+  --gold:#F5A623; --red:#E94560; --blue:#4A9EDB;
+  --green:#4CAF73; --purple:#7B5EA7;
+  --white:#FFFFFF; --light:#E0E0E0; --muted:#8888AA;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Yu Gothic UI','Hiragino Sans','Meiryo',sans-serif;
+  background:var(--bg);color:var(--light);min-height:100vh}
+header{background:linear-gradient(135deg,#0D0D1A 0%,#1A0D2E 100%);
+  border-bottom:1px solid #2a2a4a;padding:14px 16px;text-align:center}
+header h1{font-size:19px;font-weight:900;color:var(--gold);letter-spacing:.5px}
+header p{font-size:11px;color:var(--muted);margin-top:4px}
+.wrap{max-width:640px;margin:0 auto;padding:16px}
+
+/* progress dots */
+.progress{display:flex;justify-content:center;gap:6px;margin-bottom:18px}
+.dot{width:8px;height:8px;border-radius:50%;background:#333355;transition:.2s}
+.dot.active{background:var(--gold);width:20px;border-radius:5px}
+.dot.done{background:var(--green)}
+
+/* question card */
+.qcard{background:var(--card);border:1px solid #2a2a4a;border-radius:16px;padding:22px 18px;text-align:center}
+.qcard .step-lbl{font-size:11px;color:var(--muted);margin-bottom:6px}
+.qcard h2{font-size:16px;color:var(--white);line-height:1.5;margin-bottom:18px}
+.qcard .hint{font-size:11px;color:var(--muted);margin-top:-10px;margin-bottom:16px}
+.choices{display:flex;flex-direction:column;gap:10px}
+.choice{background:var(--card2);border:1.5px solid #333;border-radius:12px;padding:14px 16px;
+  text-align:left;cursor:pointer;transition:.15s;display:flex;gap:12px;align-items:center}
+.choice:hover{border-color:var(--gold);transform:translateX(2px)}
+.choice .cicon{font-size:24px;flex-shrink:0}
+.choice .ctext{font-size:13.5px;line-height:1.5}
+.choice .ctext b{color:var(--white);display:block;font-size:14px;margin-bottom:2px}
+.choice .ctext span{color:var(--muted);font-size:11.5px}
+
+.nav-row{display:flex;justify-content:space-between;margin-top:14px}
+.back-btn{font-size:12px;padding:6px 14px;border-radius:8px;border:1px solid #444;
+  background:transparent;color:var(--muted);cursor:pointer}
+.back-btn:disabled{opacity:.3;cursor:default}
+.restart-btn{font-size:12px;padding:6px 14px;border-radius:8px;border:1px solid #444;
+  background:transparent;color:var(--muted);cursor:pointer}
+
+/* result */
+#result{display:none;background:var(--card);border-radius:18px;
+  padding:26px 20px;text-align:center}
+#result.conf-high{border:2px solid var(--gold)}
+#result.conf-mid{border:2px solid var(--red)}
+.mismatch-box{display:none;background:#2A0D1A;border:1.5px solid var(--red);border-radius:10px;
+  padding:10px 14px;margin-bottom:14px;text-align:left;font-size:12px;color:var(--red);line-height:1.6}
+#result.conf-mid .mismatch-box{display:block}
+#result .r-icon{font-size:64px;margin-bottom:6px}
+#result .r-name{font-size:24px;font-weight:900;color:var(--gold)}
+#result .r-sub{font-size:12px;color:var(--muted);margin-top:4px;margin-bottom:14px}
+#result .r-desc{font-size:13px;line-height:1.8;color:var(--light);text-align:left;
+  background:var(--card2);border-radius:10px;padding:14px;margin-bottom:14px}
+#result .r-confidence{font-size:11px;color:var(--muted);margin-bottom:16px}
+.result-links{display:flex;flex-direction:column;gap:8px}
+.rlink{display:block;background:var(--card2);border:1px solid #333;border-radius:10px;
+  padding:10px 14px;font-size:12.5px;color:var(--light);text-decoration:none;text-align:center;transition:.15s}
+.rlink:hover{border-color:var(--gold);color:var(--gold)}
+.restart-final{margin-top:14px;font-size:12px;padding:8px 20px;border-radius:20px;border:none;
+  background:var(--gold);color:var(--bg);font-weight:900;cursor:pointer}
+
+.trace{margin-top:16px;font-size:10.5px;color:var(--muted);text-align:left;
+  background:var(--card2);border-radius:8px;padding:10px 12px;line-height:1.8}
+.trace b{color:var(--light)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧭 タイプ診断フローチャート</h1>
+  <p>マッチングアプリのプロフィール写真から、質問に答えて4タイプを絞り込みます</p>
+</header>
+
+<div class="wrap">
+  <div class="progress" id="progress"></div>
+
+  <div class="qcard" id="qcard">
+    <div class="step-lbl" id="stepLbl">STEP 1 / 4</div>
+    <h2 id="qtext"></h2>
+    <div class="hint" id="qhint"></div>
+    <div class="choices" id="choices"></div>
+  </div>
+
+  <div class="nav-row">
+    <button class="back-btn" id="backBtn" onclick="goBack()">← 一つ戻る</button>
+    <button class="restart-btn" onclick="restart()">🔄 最初から</button>
+  </div>
+
+  <div id="result">
+    <div class="mismatch-box">⚠️ <b>職業が一致しませんでした。</b> 写真と「エネルギーの向き」からは下記タイプが最有力ですが、職業だけは当てはまらなかったため確度は下がっています。プロフィール文章を見て最終確認してください。</div>
+    <div class="r-icon" id="rIcon"></div>
+    <div class="r-name" id="rName"></div>
+    <div class="r-sub" id="rSub"></div>
+    <div class="r-desc" id="rDesc"></div>
+    <div class="r-confidence" id="rConf"></div>
+    <div class="trace" id="trace"></div>
+    <div class="result-links">
+      <a class="rlink" href="https://fxsurfer.github.io/impass-7kx2m9/" target="_blank">🔮 さらに詳しく診断する（チップ選択式・インパス診断ツール）</a>
+      <a class="rlink" href="player_encyclopedia.html" target="_blank">📖 16タイプ プレイヤー図鑑を見る</a>
+    </div>
+    <button class="restart-final" onclick="restart()">🔄 もう一度診断する</button>
+  </div>
+</div>
+
+<script>
+// ─── FLOW DEFINITION ─────────────────────────────────
+// Step1: 太陽 or 月（第一印象）
+// Step2: 表情の質問（枝分かれ）
+// Step3: 写真の種類で確認
+// Step4: プロフィール文章の傾向で最終確認
+const TYPE_INFO = {
+  SE:{ icon:'⚔️', name:'戦士タイプ', color:'var(--red)',
+       desc:'達成本位・行動重視。夢や目標に一直線で、頼れる存在として見られたいタイプです。恋愛でも「同志」になれる相手を求めます。' },
+  OD:{ icon:'💃', name:'踊り子タイプ', color:'var(--gold)',
+       desc:'愛情本位・共感重視。人を楽しませ、気持ちが通じ合うことを大切にするタイプです。「一緒にいると楽しい」を求めます。' },
+  SO:{ icon:'🕊', name:'僧侶タイプ', color:'var(--green)',
+       desc:'調和本位・貢献重視。場の空気を大切にし、目立たぬところで支えるタイプです。安心できる関係をじっくり育てたい人です。' },
+  MA:{ icon:'🪄', name:'魔法使いタイプ', color:'var(--purple)',
+       desc:'興味本位・本質重視。センスや納得感を大切にし、深い会話を求めるタイプです。安易な褒め言葉より、理由のある共感を欲します。' },
+};
+
+// ジョニー本人の実演セミナー(2026-07-24)に準拠した4ステップ:
+// STEP1 太陽/月(表情) → STEP2 外向的/内向的(エネルギーの向き) → STEP3 職業で確認 → 結果
+const JOB_HINT = {
+  SE:'例：経営・フリーランス・営業・管理職・警察・自衛隊・スポーツ関連',
+  OD:'例：接客・美容・エステ・イベント・芸能関連',
+  SO:'例：保育・介護・看護・福祉・教育・公務員',
+  MA:'例：研究・IT・設計・デザイナー・技術職',
+};
+
+const FLOW = {
+  root: {
+    text: 'プロフィール写真を見た「第一印象」は？',
+    hint: '一番よく使われているメイン写真の表情で判断（目が大きい・表情豊か・笑顔多い＝太陽／目が細め・視線安定・ポーカーフェイス＝月。迷ったら「犬派＝太陽寄り、猫派＝月寄り」も参考に）',
+    choices: [
+      { icon:'🌞', title:'太陽っぽい', sub:'目がぱっちり・表情豊か・笑顔やリアクションが大きい', next:'sun_energy' },
+      { icon:'🌙', title:'月っぽい', sub:'目が細め・視線が安定・表情の変化が少ない、クールな印象', next:'moon_energy' },
+    ]
+  },
+  sun_energy: {
+    branch:'sun',
+    text:'写真・プロフィール全体の「エネルギーの向き」は？',
+    hint:'サブ写真や好みカード、メッセージの雰囲気で判断。「一緒に○○」というワードが多い／人との写真中心＝外向的。自分の成果や一人での自撮りが中心＝内向的',
+    choices: [
+      { icon:'🎉', title:'外向的・アクティブ', sub:'「一緒に」ワードが多い、パーティー/旅行/BBQなど人と一緒のシーン、部屋が多少雑然としてても気にしない', next:'od_job' },
+      { icon:'🎯', title:'内向的・自分主導', sub:'成果や実績を見せる写真、一人での自撮りやスポーツ・仕事関連の投稿が中心', next:'se_job' },
+    ]
+  },
+  moon_energy: {
+    branch:'moon',
+    text:'写真・プロフィール全体の「エネルギーの向き」は？',
+    hint:'友達との写真・動物・自然な雰囲気があるか、それとも一人旅やマニアックな趣味の記述が目立つかで判断',
+    choices: [
+      { icon:'🌿', title:'外向的・穏やかに人と一緒', sub:'友達との集合写真、動物（特に犬など表情豊かな子）、自然の中でも誰かと一緒', next:'so_job' },
+      { icon:'🎨', title:'内向的・こだわりが強い', sub:'一人旅・風景だけ・横顔や引きの写真、出没エリアやマニアックな趣味を細かく書く、猫派', next:'ma_job' },
+    ]
+  },
+  od_job: {
+    branch:'od', result:'OD',
+    text:'職業や仕事の書き方は、踊り子タイプっぽい？',
+    hint: JOB_HINT.OD,
+    choices: [
+      { icon:'✅', title:'当てはまる', sub:'接客・美容・イベント・芸能系など', conf:'high' },
+      { icon:'🤔', title:'ちょっと違う気がする', sub:'職業は違うが表情・雰囲気は踊り子寄り', conf:'mid', note:'プロフィール文章（「楽しい」「笑」等の頻度）もあわせて確認するとより確実です' },
+    ]
+  },
+  se_job: {
+    branch:'se', result:'SE',
+    text:'職業や仕事の書き方は、戦士タイプっぽい？',
+    hint: JOB_HINT.SE,
+    choices: [
+      { icon:'✅', title:'当てはまる', sub:'経営・営業・管理職・体育会系など', conf:'high' },
+      { icon:'🤔', title:'ちょっと違う気がする', sub:'職業は違うが達成志向・行動力は感じる', conf:'mid', note:'プロフィール文章（「成長」「挑戦」「目標」等の頻度）もあわせて確認するとより確実です' },
+    ]
+  },
+  so_job: {
+    branch:'so', result:'SO',
+    text:'職業や仕事の書き方は、僧侶タイプっぽい？',
+    hint: JOB_HINT.SO,
+    choices: [
+      { icon:'✅', title:'当てはまる', sub:'保育・看護・介護・福祉・公務員など', conf:'high' },
+      { icon:'🤔', title:'ちょっと違う気がする', sub:'職業は違うが穏やかさ・思いやりは感じる', conf:'mid', note:'プロフィール文章（「安心」「思いやり」「支え合う」等の頻度）もあわせて確認するとより確実です' },
+    ]
+  },
+  ma_job: {
+    branch:'ma', result:'MA',
+    text:'職業や仕事の書き方は、魔法使いタイプっぽい？',
+    hint: JOB_HINT.MA,
+    choices: [
+      { icon:'✅', title:'当てはまる', sub:'研究・IT・設計・デザイナー・技術職など', conf:'high' },
+      { icon:'🤔', title:'ちょっと違う気がする', sub:'職業は違うがマイペースさ・こだわりの強さは感じる', conf:'mid', note:'プロフィール文章（「マイペース」「こだわり」「深い話」等の頻度）もあわせて確認するとより確実です' },
+    ]
+  },
+};
+
+let answerHistory = []; // 選んだステップのキーを記録（window.historyと衝突しないよう命名）
+let currentKey = 'root';
+
+function renderStep(){
+  const step = FLOW[currentKey];
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('qcard').style.display = 'block';
+  document.querySelector('.nav-row').style.display = 'flex';
+
+  document.getElementById('stepLbl').textContent = `STEP ${answerHistory.length+1} / ${estimateTotal()}`;
+  document.getElementById('qtext').textContent = step.text;
+  document.getElementById('qhint').textContent = step.hint || '';
+
+  const cc = document.getElementById('choices');
+  cc.innerHTML = '';
+  step.choices.forEach((c, idx) => {
+    const d = document.createElement('div');
+    d.className = 'choice';
+    d.innerHTML = `<span class="cicon">${c.icon}</span><span class="ctext"><b>${c.title}</b><span>${c.sub}</span></span>`;
+    d.onclick = () => selectChoice(c);
+    cc.appendChild(d);
+  });
+
+  document.getElementById('backBtn').disabled = answerHistory.length === 0;
+  renderProgress();
+}
+
+function estimateTotal(){
+  // root -> energy step -> job-confirm step = 3 steps
+  return 3;
+}
+
+function renderProgress(){
+  const p = document.getElementById('progress');
+  const total = 3;
+  p.innerHTML = '';
+  for(let i=0;i<total;i++){
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i < answerHistory.length ? ' done' : (i===answerHistory.length ? ' active' : ''));
+    p.appendChild(dot);
+  }
+}
+
+function selectChoice(c){
+  const step = FLOW[currentKey];
+  answerHistory.push({ key: currentKey });
+  if(step.result){
+    showResult(step.result, c.conf, c.note);
+    return;
+  }
+  currentKey = c.next;
+  renderStep();
+}
+
+function goBack(){
+  if(answerHistory.length===0) return;
+  const last = answerHistory.pop();
+  currentKey = last.key;
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('qcard').style.display = 'block';
+  renderStep();
+}
+
+function restart(){
+  answerHistory = [];
+  currentKey = 'root';
+  renderStep();
+}
+
+function showResult(typeCode, conf, note){
+  document.getElementById('qcard').style.display = 'none';
+  document.querySelector('.nav-row').style.display = 'none';
+  const info = TYPE_INFO[typeCode];
+  document.getElementById('rIcon').textContent = info.icon;
+  document.getElementById('rName').textContent = info.name;
+  document.getElementById('rName').style.color = info.color;
+  document.getElementById('rSub').textContent = '表情×エネルギーの向き×職業からの診断結果';
+  document.getElementById('rDesc').textContent = info.desc;
+  document.getElementById('rConf').textContent = conf==='high'
+    ? '🎯 確度：高め（表情・エネルギー・職業がすべて一致）'
+    : '⚠️ 確度：仮説段階（' + (note||'追加確認をおすすめします') + '）';
+  document.getElementById('result').className = conf==='high' ? 'conf-high' : 'conf-mid';
+
+  const traceLines = answerHistory.map((h,i)=>`STEP${i+1}: ${FLOW[h.key].text}`).join('<br>');
+  document.getElementById('trace').innerHTML = `<b>診断の道のり</b><br>${traceLines}`;
+
+  document.getElementById('result').style.display = 'block';
+}
+
+restart();
+</script>
+</body>
+</html>
