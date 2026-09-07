@@ -215,6 +215,9 @@ footer{text-align:center;font-size:10.5px;color:#555570;padding:12px 20px}
     const data = await res.json();
     if(data.loggedIn){
       accountBar.innerHTML = `<span>${data.email}</span><a href="/api/auth/logout">ログアウト</a>`;
+    } else if(!loginParam){
+      // 未ログインなら自動的にGoogleログイン画面へ(ログイン失敗/制限バナー表示中は自動遷移させない)
+      location.href = '/api/auth/start';
     } else {
       accountBar.innerHTML = `<a href="/api/auth/start">🔐 Googleでログイン</a>`;
     }
