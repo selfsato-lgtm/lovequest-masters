@@ -169,6 +169,7 @@ main{display:grid;grid-template-columns:180px 1fr 280px;gap:12px;
   border:1px solid #3a3a5a;background:#1a1a2e;color:var(--muted);transition:.15s}
 .q-type-chip:hover{border-color:#555}
 .q-type-chip.on{background:#0D1F0D;border-color:var(--green);color:var(--green)}
+.q-type-chip-link{font-size:11px;text-decoration:none;margin:0 4px 0 -2px;align-self:center}
 .q-counter-ctrl{margin-top:8px;display:flex;gap:6px}
 
 /* ─── DATE LOG ─── */
@@ -479,9 +480,12 @@ function statValue(key){
 }
 
 const QUESTS = [
-  {name:'タイプ診断マスター',   desc:'恋愛式学16タイプを理解する(1タイプ理解ごとに+1P、16タイプ全て理解でボーナス+100XP)', icon:'🔮', multi:true, perItemXP:1, xp:100, reward:{コミュ力:15,共感力:10}},
+  {name:'タイプ診断マスター',   desc:'恋愛式学16タイプを理解する(1タイプ理解ごとに+1P、16タイプ全て理解でボーナス+100XP)', icon:'🔮', multi:true, items:AVATARS.map(a=>a.name), perItemXP:1, xp:100, reward:{コミュ力:15,共感力:10}},
   {name:'プロフィール写真改善', desc:'FANTS内「外見力基礎講座」を受講・完了する', icon:'📸',xp:80,  reward:{外見力:20}},
-  {name:'外見力 Lv.3 達成',    desc:'外見スコア30以上を達成',       icon:'✨',xp:120, reward:{外見力:10,表現力:5}},
+  {name:'タイプ別ファッション講座', desc:'FANTS内の資料を視聴する(1つ視聴ごとに+10P、2つ視聴でボーナス+20XP)', icon:'👔', multi:true, items:[
+    {label:'タイプ別女性ファッションの見極めガイド', url:'https://bmen.jp/pdf/2W8ngN3dJc.pdf'},
+    {label:'タイプ別女性が好む男性ファッションガイド', url:'https://bmen.jp/pdf/tQUNciFEp2.pdf'},
+  ], perItemXP:10, xp:0, reward:{外見力:20}},
   {name:'マッチングアプリ完全解説マニュアル', desc:'FANTS内「マッチングアプリ完全解説マニュアル」を学習する', icon:'📘',xp:60, reward:{コミュ力:15}},
   {name:'マッチングアプリ登録', desc:'アプリを始める第一歩',         icon:'📱',xp:50,  reward:{コミュ力:10}},
   {name:'デートアポクリア！',   desc:'デートへ誘ってOKされたら押す(1回ごとに+0.5XP、何度でも加算可能)', icon:'📅', counter:true, perClickXP:0.5},
@@ -504,7 +508,7 @@ let state = {
   mindmapCount: 0,
   manualDone: [],
   done: [],
-  typeMastery: [],
+  multiChecks: {},
   dateApoCount: 0,
   dateLogs: [],
   myBirth: '',
@@ -519,7 +523,13 @@ function normalizeState(s){
   if(typeof s.mindmapCount !== 'number') s.mindmapCount = 0;
   if(!Array.isArray(s.manualDone)) s.manualDone = [];
   if(!Array.isArray(s.done)) s.done = [];
-  if(!Array.isArray(s.typeMastery)) s.typeMastery = [];
+  if(!s.multiChecks || typeof s.multiChecks !== 'object' || Array.isArray(s.multiChecks)) s.multiChecks = {};
+  // 旧セーブデータ互換: typeMastery配列(タイプ診断マスター専用の古い保存形式)をmultiChecksへ移行
+  if(Array.isArray(s.typeMastery)){
+    if(!s.multiChecks['タイプ診断マスター']) s.multiChecks['タイプ診断マスター'] = s.typeMastery;
+    delete s.typeMastery;
+  }
+  QUESTS.forEach(q => { if(q.multi && !Array.isArray(s.multiChecks[q.name])) s.multiChecks[q.name] = []; });
   if(typeof s.dateApoCount !== 'number') s.dateApoCount = 0;
   if(!Array.isArray(s.dateLogs)) s.dateLogs = [];
   if(typeof s.myBirth !== 'string') s.myBirth = '';
@@ -535,9 +545,10 @@ function load(){
 // ─── LEVEL CALC ─────────────────────────────────────
 function totalXP(){
   const questXP = QUESTS.reduce((s,q,i)=>s+(state.done.includes(i)?q.xp:0),0);
-  const typeMasteryXP = (state.typeMastery||[]).length; // 1タイプ理解ごとに+1P(ボーナス100は上のQUESTS達成分でカウント済み)
+  // multi系クエスト(タイプ診断マスター/タイプ別ファッション講座など)は1項目チェックごとに+perItemXP(ボーナスは上のQUESTS達成分でカウント済み)
+  const multiXP = QUESTS.filter(q=>q.multi).reduce((s,q)=>s+(state.multiChecks[q.name]||[]).length*q.perItemXP,0);
   const dateApoXP = (state.dateApoCount||0) * 0.5; // デートアポクリア！1回ごとに+0.5XP
-  return questXP + typeMasteryXP + dateApoXP;
+  return questXP + multiXP + dateApoXP;
 }
 function calcLv(xp){
   for(let i=LV_THRESHOLDS.length-1;i>=0;i--) if(xp>=LV_THRESHOLDS[i]) return i+1;
@@ -697,20 +708,20 @@ function renderQuests(){
     const rewardTxt = q.reward ? Object.entries(q.reward).map(([k,v])=>`${k}+${v}`).join(' / ') : '';
     const div = document.createElement('div');
     div.className = 'q-item' + (done?' done':'') + (q.multi||q.counter?' q-item-multi':'');
-    const masteredCount = (state.typeMastery||[]).length;
+    const checkedCount = q.multi ? (state.multiChecks[q.name]||[]).length : 0;
     let rewardLine;
     if(q.counter){
       rewardLine = `1回+${q.perClickXP}XP（合計 ${(state.dateApoCount||0)*q.perClickXP}XP）`;
     } else {
-      rewardLine = `🎁 ${rewardTxt}  (+${q.xp} XP${q.multi?` ／ 理解1タイプ+${q.perItemXP}P`:''})`;
+      rewardLine = `🎁 ${rewardTxt}  (+${q.xp} XP${q.multi?` ／ 1つ+${q.perItemXP}P`:''})`;
     }
     div.innerHTML = `
       <span class="q-icon">${q.icon}</span>
       <div class="q-body">
-        <div class="q-name">${q.name}${q.multi?` <span class="q-multi-count">(${masteredCount}/${AVATARS.length})</span>`:''}${q.counter?` <span class="q-multi-count">(${state.dateApoCount||0}回)</span>`:''}</div>
+        <div class="q-name">${q.name}${q.multi?` <span class="q-multi-count">(${checkedCount}/${q.items.length})</span>`:''}${q.counter?` <span class="q-multi-count">(${state.dateApoCount||0}回)</span>`:''}</div>
         <div class="q-desc">${q.desc}</div>
         <div class="q-reward">${rewardLine}</div>
-        ${q.multi? renderTypeChips() : ''}
+        ${q.multi? renderMultiChips(q) : ''}
         ${q.counter? `<div class="q-counter-ctrl"><button class="adj-btn" onclick="event.stopPropagation();adjDateApo(-1)">−</button><button class="adj-btn" onclick="event.stopPropagation();adjDateApo(1)">＋ デート決定！</button></div>` : ''}
       </div>
       ${(q.multi||q.counter)? '' : '<span class="q-check"></span>'}`;
@@ -728,26 +739,32 @@ function adjDateApo(delta){
   if(newLv > prevLv) showLevelUp(newLv);
 }
 
-// タイプ診断マスター用: 16タイプそれぞれの理解チェックチップ
-function renderTypeChips(){
-  return `<div class="q-type-chips">${AVATARS.map(a=>{
-    const on = (state.typeMastery||[]).includes(a.name);
-    return `<span class="q-type-chip${on?' on':''}" onclick="event.stopPropagation();toggleTypeMastery('${a.name}')">${a.icon} ${a.name}</span>`;
+// multi系クエスト用の項目名/リンクを取得するヘルパー(itemは文字列 or {label,url})
+function itemLabel(item){ return typeof item === 'string' ? item : item.label; }
+function itemUrl(item){ return typeof item === 'object' && item.url ? item.url : null; }
+
+// multi系クエスト(タイプ診断マスター/タイプ別ファッション講座など)の項目チェックチップを描画
+function renderMultiChips(q){
+  return `<div class="q-type-chips">${q.items.map(item=>{
+    const label = itemLabel(item), url = itemUrl(item);
+    const on = (state.multiChecks[q.name]||[]).includes(label);
+    const linkHtml = url ? `<a href="${url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="q-type-chip-link">🔗</a>` : '';
+    return `<span class="q-type-chip${on?' on':''}" onclick="event.stopPropagation();toggleMultiItem('${q.name.replace(/'/g,"\\'")}','${label.replace(/'/g,"\\'")}')">${label}</span>${linkHtml}`;
   }).join('')}</div>`;
 }
 
-function toggleTypeMastery(name){
+function toggleMultiItem(questName, label){
   const prevLv = calcLv(totalXP());
-  const idx = state.typeMastery.indexOf(name);
-  if(idx >= 0) state.typeMastery.splice(idx,1);
-  else state.typeMastery.push(name);
+  const checks = state.multiChecks[questName] || (state.multiChecks[questName] = []);
+  const idx = checks.indexOf(label);
+  if(idx >= 0) checks.splice(idx,1);
+  else checks.push(label);
 
-  // 16タイプ全て理解したら「タイプ診断マスター」クエストを自動達成扱いにする(ボーナスXP+ステータス付与)。
-  // 1つでも外れたら未達成に戻す(付与済みのボーナスも取り消す)
-  const qi = QUESTS.findIndex(q => q.multi);
+  // 全項目チェックしたらそのクエストを自動達成扱いにする(ボーナスXP+ステータス付与)。1つでも外れたら未達成に戻す(付与済みのボーナスも取り消す)
+  const qi = QUESTS.findIndex(q => q.name === questName);
   const q = QUESTS[qi];
   const wasDone = state.done.includes(qi);
-  const nowComplete = state.typeMastery.length === AVATARS.length;
+  const nowComplete = checks.length === q.items.length;
   if(nowComplete && !wasDone){
     state.done.push(qi);
     Object.entries(q.reward).forEach(([k,v])=>{ state.stats[k] = Math.min(100,(state.stats[k]||0)+v); });
@@ -894,9 +911,11 @@ function buildBookMarkdown(){
     }
     lines.push(`- [${state.done.includes(i)?'x':' '}] ${q.name}`);
     if(q.multi){
-      lines.push(`  - タイプ理解: ${(state.typeMastery||[]).length} / ${AVATARS.length}`);
-      AVATARS.forEach(a => {
-        lines.push(`    - [${(state.typeMastery||[]).includes(a.name)?'x':' '}] ${a.name}`);
+      const checks = state.multiChecks[q.name] || [];
+      lines.push(`  - 進捗: ${checks.length} / ${q.items.length}`);
+      q.items.forEach(item => {
+        const label = itemLabel(item);
+        lines.push(`    - [${checks.includes(label)?'x':' '}] ${label}`);
       });
     }
   });
