@@ -169,6 +169,7 @@ main{display:grid;grid-template-columns:180px 1fr 280px;gap:12px;
   border:1px solid #3a3a5a;background:#1a1a2e;color:var(--muted);transition:.15s}
 .q-type-chip:hover{border-color:#555}
 .q-type-chip.on{background:#0D1F0D;border-color:var(--green);color:var(--green)}
+.q-counter-ctrl{margin-top:8px;display:flex;gap:6px}
 
 /* ─── DATE LOG ─── */
 .datelog-wrap{max-width:1100px;margin:0 auto;padding:0 12px 24px}
@@ -482,7 +483,7 @@ const QUESTS = [
   {name:'プロフィール写真改善', desc:'FANTS内「外見力基礎講座」を受講・完了する', icon:'📸',xp:80,  reward:{外見力:20}},
   {name:'外見力 Lv.3 達成',    desc:'外見スコア30以上を達成',       icon:'✨',xp:120, reward:{外見力:10,表現力:5}},
   {name:'マッチングアプリ登録', desc:'アプリを始める第一歩',         icon:'📱',xp:50,  reward:{コミュ力:10}},
-  {name:'初メッセージ送信',    desc:'相手にメッセージを送る',        icon:'💬',xp:80,  reward:{コミュ力:15,デート力:5}},
+  {name:'デートアポクリア！',   desc:'デートへ誘ってOKされたら押す(1回ごとに+0.5XP、何度でも加算可能)', icon:'📅', counter:true, perClickXP:0.5},
   {name:'初回デート成功',      desc:'初めてのデートを完了',          icon:'☕',xp:200, reward:{デート力:25,共感力:15}},
   {name:'2回目デートOK',       desc:'相手から2回目の承諾を得る',     icon:'🌟',xp:250, reward:{楽転力:20,デート力:15}},
   {name:'コミュ力 Lv.5 達成',  desc:'コミュスコア50以上を達成',      icon:'💫',xp:150, reward:{コミュ力:10,共感力:10}},
@@ -503,6 +504,7 @@ let state = {
   manualDone: [],
   done: [],
   typeMastery: [],
+  dateApoCount: 0,
   dateLogs: [],
   myBirth: '',
 };
@@ -517,6 +519,7 @@ function normalizeState(s){
   if(!Array.isArray(s.manualDone)) s.manualDone = [];
   if(!Array.isArray(s.done)) s.done = [];
   if(!Array.isArray(s.typeMastery)) s.typeMastery = [];
+  if(typeof s.dateApoCount !== 'number') s.dateApoCount = 0;
   if(!Array.isArray(s.dateLogs)) s.dateLogs = [];
   if(typeof s.myBirth !== 'string') s.myBirth = '';
   if(typeof s.avatarIdx !== 'number') s.avatarIdx = 2;
@@ -532,7 +535,8 @@ function load(){
 function totalXP(){
   const questXP = QUESTS.reduce((s,q,i)=>s+(state.done.includes(i)?q.xp:0),0);
   const typeMasteryXP = (state.typeMastery||[]).length; // 1タイプ理解ごとに+1P(ボーナス100は上のQUESTS達成分でカウント済み)
-  return questXP + typeMasteryXP;
+  const dateApoXP = (state.dateApoCount||0) * 0.5; // デートアポクリア！1回ごとに+0.5XP
+  return questXP + typeMasteryXP + dateApoXP;
 }
 function calcLv(xp){
   for(let i=LV_THRESHOLDS.length-1;i>=0;i--) if(xp>=LV_THRESHOLDS[i]) return i+1;
@@ -689,22 +693,38 @@ function renderQuests(){
   qc.textContent = `${state.done.length} / ${QUESTS.length} 完了`;
   QUESTS.forEach((q,i) => {
     const done = state.done.includes(i);
-    const rewardTxt = Object.entries(q.reward).map(([k,v])=>`${k}+${v}`).join(' / ');
+    const rewardTxt = q.reward ? Object.entries(q.reward).map(([k,v])=>`${k}+${v}`).join(' / ') : '';
     const div = document.createElement('div');
-    div.className = 'q-item' + (done?' done':'') + (q.multi?' q-item-multi':'');
+    div.className = 'q-item' + (done?' done':'') + (q.multi||q.counter?' q-item-multi':'');
     const masteredCount = (state.typeMastery||[]).length;
+    let rewardLine;
+    if(q.counter){
+      rewardLine = `1回+${q.perClickXP}XP（合計 ${(state.dateApoCount||0)*q.perClickXP}XP）`;
+    } else {
+      rewardLine = `🎁 ${rewardTxt}  (+${q.xp} XP${q.multi?` ／ 理解1タイプ+${q.perItemXP}P`:''})`;
+    }
     div.innerHTML = `
       <span class="q-icon">${q.icon}</span>
       <div class="q-body">
-        <div class="q-name">${q.name}${q.multi?` <span class="q-multi-count">(${masteredCount}/${AVATARS.length})</span>`:''}</div>
+        <div class="q-name">${q.name}${q.multi?` <span class="q-multi-count">(${masteredCount}/${AVATARS.length})</span>`:''}${q.counter?` <span class="q-multi-count">(${state.dateApoCount||0}回)</span>`:''}</div>
         <div class="q-desc">${q.desc}</div>
-        <div class="q-reward">🎁 ${rewardTxt}  (+${q.xp} XP${q.multi?` ／ 理解1タイプ+${q.perItemXP}P`:''})</div>
+        <div class="q-reward">${rewardLine}</div>
         ${q.multi? renderTypeChips() : ''}
+        ${q.counter? `<div class="q-counter-ctrl"><button class="adj-btn" onclick="event.stopPropagation();adjDateApo(-1)">−</button><button class="adj-btn" onclick="event.stopPropagation();adjDateApo(1)">＋ デート決定！</button></div>` : ''}
       </div>
-      ${q.multi? '' : '<span class="q-check"></span>'}`;
-    if(!q.multi) div.onclick = () => toggleQuest(i);
+      ${(q.multi||q.counter)? '' : '<span class="q-check"></span>'}`;
+    if(!q.multi && !q.counter) div.onclick = () => toggleQuest(i);
     c.appendChild(div);
   });
+}
+
+function adjDateApo(delta){
+  const prevLv = calcLv(totalXP());
+  state.dateApoCount = Math.max(0, (state.dateApoCount||0) + delta);
+  save();
+  renderAll();
+  const newLv = calcLv(totalXP());
+  if(newLv > prevLv) showLevelUp(newLv);
 }
 
 // タイプ診断マスター用: 16タイプそれぞれの理解チェックチップ
@@ -867,6 +887,10 @@ function buildBookMarkdown(){
   lines.push('');
   lines.push(`## クエスト（${state.done.length} / ${QUESTS.length} 達成）`);
   QUESTS.forEach((q,i) => {
+    if(q.counter){
+      lines.push(`- ${q.name}: ${state.dateApoCount||0}回`);
+      return;
+    }
     lines.push(`- [${state.done.includes(i)?'x':' '}] ${q.name}`);
     if(q.multi){
       lines.push(`  - タイプ理解: ${(state.typeMastery||[]).length} / ${AVATARS.length}`);
