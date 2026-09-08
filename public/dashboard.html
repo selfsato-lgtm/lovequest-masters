@@ -162,6 +162,13 @@ main{display:grid;grid-template-columns:180px 1fr 280px;gap:12px;
 .q-check{font-size:18px;flex-shrink:0;margin-top:1px}
 .q-item.done .q-check::before{content:'✅'}
 .q-item:not(.done) .q-check::before{content:'⬜'}
+.q-item-multi{cursor:default}
+.q-multi-count{font-size:10.5px;font-weight:400;color:var(--muted)}
+.q-type-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.q-type-chip{font-size:10.5px;padding:4px 8px;border-radius:12px;cursor:pointer;
+  border:1px solid #3a3a5a;background:#1a1a2e;color:var(--muted);transition:.15s}
+.q-type-chip:hover{border-color:#555}
+.q-type-chip.on{background:#0D1F0D;border-color:var(--green);color:var(--green)}
 
 /* ─── DATE LOG ─── */
 .datelog-wrap{max-width:1100px;margin:0 auto;padding:0 12px 24px}
@@ -237,7 +244,7 @@ main{display:grid;grid-template-columns:180px 1fr 280px;gap:12px;
 
 <!-- Header -->
 <header>
-  <div class="hdr-side left"><a class="portal-back" href="index.html">← <span class="pb-txt">ポータルへ戻る</span></a></div>
+  <div class="hdr-side left"><a class="portal-back" href="index.html" onclick="location.href='index.html?t='+Date.now();return false;">← <span class="pb-txt">ポータルへ戻る</span></a></div>
   <div class="logo">LOVE<span>QUEST</span> <span style="font-size:12px;color:var(--muted)">MASTERS</span></div>
   <div class="hdr-side right">
     <div class="hdr-right">
@@ -471,7 +478,7 @@ function statValue(key){
 }
 
 const QUESTS = [
-  {name:'タイプ診断マスター',   desc:'恋愛式学16タイプを理解する', icon:'🔮',xp:100, reward:{コミュ力:15,共感力:10}},
+  {name:'タイプ診断マスター',   desc:'恋愛式学16タイプを理解する(1タイプ理解ごとに+1P、16タイプ全て理解でボーナス+100XP)', icon:'🔮', multi:true, perItemXP:1, xp:100, reward:{コミュ力:15,共感力:10}},
   {name:'プロフィール写真改善', desc:'外見力基礎講座を完了',        icon:'📸',xp:80,  reward:{外見力:20}},
   {name:'外見力 Lv.3 達成',    desc:'外見スコア30以上を達成',       icon:'✨',xp:120, reward:{外見力:10,表現力:5}},
   {name:'マッチングアプリ登録', desc:'アプリを始める第一歩',         icon:'📱',xp:50,  reward:{コミュ力:10}},
@@ -495,6 +502,7 @@ let state = {
   mindmapCount: 0,
   manualDone: [],
   done: [],
+  typeMastery: [],
   dateLogs: [],
   myBirth: '',
 };
@@ -508,6 +516,7 @@ function normalizeState(s){
   if(typeof s.mindmapCount !== 'number') s.mindmapCount = 0;
   if(!Array.isArray(s.manualDone)) s.manualDone = [];
   if(!Array.isArray(s.done)) s.done = [];
+  if(!Array.isArray(s.typeMastery)) s.typeMastery = [];
   if(!Array.isArray(s.dateLogs)) s.dateLogs = [];
   if(typeof s.myBirth !== 'string') s.myBirth = '';
   if(typeof s.avatarIdx !== 'number') s.avatarIdx = 2;
@@ -520,7 +529,11 @@ function load(){
 }
 
 // ─── LEVEL CALC ─────────────────────────────────────
-function totalXP(){ return QUESTS.reduce((s,q,i)=>s+(state.done.includes(i)?q.xp:0),0); }
+function totalXP(){
+  const questXP = QUESTS.reduce((s,q,i)=>s+(state.done.includes(i)?q.xp:0),0);
+  const typeMasteryXP = (state.typeMastery||[]).length; // 1タイプ理解ごとに+1P(ボーナス100は上のQUESTS達成分でカウント済み)
+  return questXP + typeMasteryXP;
+}
 function calcLv(xp){
   for(let i=LV_THRESHOLDS.length-1;i>=0;i--) if(xp>=LV_THRESHOLDS[i]) return i+1;
   return 1;
@@ -678,18 +691,53 @@ function renderQuests(){
     const done = state.done.includes(i);
     const rewardTxt = Object.entries(q.reward).map(([k,v])=>`${k}+${v}`).join(' / ');
     const div = document.createElement('div');
-    div.className = 'q-item' + (done?' done':'');
+    div.className = 'q-item' + (done?' done':'') + (q.multi?' q-item-multi':'');
+    const masteredCount = (state.typeMastery||[]).length;
     div.innerHTML = `
       <span class="q-icon">${q.icon}</span>
       <div class="q-body">
-        <div class="q-name">${q.name}</div>
+        <div class="q-name">${q.name}${q.multi?` <span class="q-multi-count">(${masteredCount}/${AVATARS.length})</span>`:''}</div>
         <div class="q-desc">${q.desc}</div>
-        <div class="q-reward">🎁 ${rewardTxt}  (+${q.xp} XP)</div>
+        <div class="q-reward">🎁 ${rewardTxt}  (+${q.xp} XP${q.multi?` ／ 理解1タイプ+${q.perItemXP}P`:''})</div>
+        ${q.multi? renderTypeChips() : ''}
       </div>
-      <span class="q-check"></span>`;
-    div.onclick = () => toggleQuest(i);
+      ${q.multi? '' : '<span class="q-check"></span>'}`;
+    if(!q.multi) div.onclick = () => toggleQuest(i);
     c.appendChild(div);
   });
+}
+
+// タイプ診断マスター用: 16タイプそれぞれの理解チェックチップ
+function renderTypeChips(){
+  return `<div class="q-type-chips">${AVATARS.map(a=>{
+    const on = (state.typeMastery||[]).includes(a.name);
+    return `<span class="q-type-chip${on?' on':''}" onclick="event.stopPropagation();toggleTypeMastery('${a.name}')">${a.icon} ${a.name}</span>`;
+  }).join('')}</div>`;
+}
+
+function toggleTypeMastery(name){
+  const prevLv = calcLv(totalXP());
+  const idx = state.typeMastery.indexOf(name);
+  if(idx >= 0) state.typeMastery.splice(idx,1);
+  else state.typeMastery.push(name);
+
+  // 16タイプ全て理解したら「タイプ診断マスター」クエストを自動達成扱いにする(ボーナスXP+ステータス付与)。
+  // 1つでも外れたら未達成に戻す(付与済みのボーナスも取り消す)
+  const qi = QUESTS.findIndex(q => q.multi);
+  const q = QUESTS[qi];
+  const wasDone = state.done.includes(qi);
+  const nowComplete = state.typeMastery.length === AVATARS.length;
+  if(nowComplete && !wasDone){
+    state.done.push(qi);
+    Object.entries(q.reward).forEach(([k,v])=>{ state.stats[k] = Math.min(100,(state.stats[k]||0)+v); });
+  } else if(!nowComplete && wasDone){
+    state.done.splice(state.done.indexOf(qi),1);
+    Object.entries(q.reward).forEach(([k,v])=>{ state.stats[k] = Math.max(0,(state.stats[k]||0)-v); });
+  }
+  save();
+  renderAll();
+  const newLv = calcLv(totalXP());
+  if(newLv > prevLv) showLevelUp(newLv);
 }
 
 function renderAll(){
@@ -820,6 +868,12 @@ function buildBookMarkdown(){
   lines.push(`## クエスト（${state.done.length} / ${QUESTS.length} 達成）`);
   QUESTS.forEach((q,i) => {
     lines.push(`- [${state.done.includes(i)?'x':' '}] ${q.name}`);
+    if(q.multi){
+      lines.push(`  - タイプ理解: ${(state.typeMastery||[]).length} / ${AVATARS.length}`);
+      AVATARS.forEach(a => {
+        lines.push(`    - [${(state.typeMastery||[]).includes(a.name)?'x':' '}] ${a.name}`);
+      });
+    }
   });
   lines.push('');
   lines.push(`## その他の記録`);
