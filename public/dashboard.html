@@ -488,8 +488,8 @@ const QUESTS = [
   ], perItemReward:{外見力:10}, xp:0, reward:{}},
   {name:'マッチングアプリ完全解説マニュアル', desc:'FANTS内「マッチングアプリ完全解説マニュアル」を学習する', icon:'📘',xp:60, reward:{コミュ力:15}},
   {name:'マッチングアプリ登録', desc:'アプリを始める第一歩',         icon:'📱',xp:50,  reward:{コミュ力:10}},
-  {name:'デートアポクリア！',   desc:'デートへ誘ってOKされたら押す(1回ごとに+0.5XP、何度でも加算可能)', icon:'📅', counter:true, perClickXP:0.5},
-  {name:'初回デート成功',      desc:'初めてのデートを完了',          icon:'☕',xp:200, reward:{デート力:25,共感力:15}},
+  {name:'デートアポクリア！',   desc:'デートへ誘ってOKされたら押す(1回ごとに+0.5XP、何度でも加算可能)', icon:'📅', counter:true, countKey:'dateApoCount', perClickXP:0.5},
+  {name:'初デート成功',        desc:'デートするたびに押す(1回ごとにデート力+5、コミュ力+1、何度でも加算可能)', icon:'☕', counter:true, countKey:'dateSuccessCount', perClickReward:{デート力:5,コミュ力:1}},
   {name:'2回目デートOK',       desc:'相手から2回目の承諾を得る',     icon:'🌟',xp:250, reward:{楽転力:20,デート力:15}},
   {name:'コミュ力 Lv.5 達成',  desc:'コミュスコア50以上を達成',      icon:'💫',xp:150, reward:{コミュ力:10,共感力:10}},
   {name:'デート力 Lv.5 達成',  desc:'デートスコア50以上を達成',      icon:'🗺️',xp:150, reward:{デート力:10,表現力:10}},
@@ -510,6 +510,7 @@ let state = {
   done: [],
   multiChecks: {},
   dateApoCount: 0,
+  dateSuccessCount: 0,
   dateLogs: [],
   myBirth: '',
 };
@@ -531,6 +532,7 @@ function normalizeState(s){
   }
   QUESTS.forEach(q => { if(q.multi && !Array.isArray(s.multiChecks[q.name])) s.multiChecks[q.name] = []; });
   if(typeof s.dateApoCount !== 'number') s.dateApoCount = 0;
+  if(typeof s.dateSuccessCount !== 'number') s.dateSuccessCount = 0;
   if(!Array.isArray(s.dateLogs)) s.dateLogs = [];
   if(typeof s.myBirth !== 'string') s.myBirth = '';
   if(typeof s.avatarIdx !== 'number') s.avatarIdx = 2;
@@ -711,7 +713,12 @@ function renderQuests(){
     const checkedCount = q.multi ? (state.multiChecks[q.name]||[]).length : 0;
     let rewardLine;
     if(q.counter){
-      rewardLine = `1回+${q.perClickXP}XP（合計 ${(state.dateApoCount||0)*q.perClickXP}XP）`;
+      const count = state[q.countKey]||0;
+      if(q.perClickReward){
+        rewardLine = `1回ごとに${Object.entries(q.perClickReward).map(([k,v])=>`${k}+${v}`).join('/')}（合計${count}回分）`;
+      } else {
+        rewardLine = `1回+${q.perClickXP}XP（合計 ${count*q.perClickXP}XP）`;
+      }
     } else if(q.multi){
       const perItemTxt = q.perItemReward
         ? `1つ視聴ごとに${Object.entries(q.perItemReward).map(([k,v])=>`${k}+${v}`).join('/')}`
@@ -726,11 +733,11 @@ function renderQuests(){
     div.innerHTML = `
       <span class="q-icon">${q.icon}</span>
       <div class="q-body">
-        <div class="q-name">${q.name}${q.multi?` <span class="q-multi-count">(${checkedCount}/${q.items.length})</span>`:''}${q.counter?` <span class="q-multi-count">(${state.dateApoCount||0}回)</span>`:''}</div>
+        <div class="q-name">${q.name}${q.multi?` <span class="q-multi-count">(${checkedCount}/${q.items.length})</span>`:''}${q.counter?` <span class="q-multi-count">(${state[q.countKey]||0}回)</span>`:''}</div>
         <div class="q-desc">${q.desc}</div>
         <div class="q-reward">${rewardLine}</div>
         ${q.multi? renderMultiChips(q) : ''}
-        ${q.counter? `<div class="q-counter-ctrl"><button class="adj-btn" onclick="event.stopPropagation();adjDateApo(-1)">−</button><button class="adj-btn" onclick="event.stopPropagation();adjDateApo(1)">＋ デート決定！</button></div>` : ''}
+        ${q.counter? `<div class="q-counter-ctrl"><button class="adj-btn" onclick="event.stopPropagation();adjCounter(${i},-1)">−</button><button class="adj-btn" onclick="event.stopPropagation();adjCounter(${i},1)">＋ ${q.name.includes('デート')?'デート決定！':'記録する'}</button></div>` : ''}
       </div>
       ${(q.multi||q.counter)? '' : '<span class="q-check"></span>'}`;
     if(!q.multi && !q.counter) div.onclick = () => toggleQuest(i);
@@ -738,9 +745,19 @@ function renderQuests(){
   });
 }
 
-function adjDateApo(delta){
+// counter系クエスト(デートアポクリア！/初デート成功など)共通の±ボタン処理
+function adjCounter(qi, delta){
   const prevLv = calcLv(totalXP());
-  state.dateApoCount = Math.max(0, (state.dateApoCount||0) + delta);
+  const q = QUESTS[qi];
+  state[q.countKey] = Math.max(0, (state[q.countKey]||0) + delta);
+  // perClickRewardが設定されていれば、対象ステータスへ直接反映(経験値のような派生ステータスは対象外、各stat計算式側で直接カウントを参照する)
+  if(q.perClickReward){
+    Object.entries(q.perClickReward).forEach(([k,v])=>{
+      state.stats[k] = delta > 0
+        ? Math.min(100,(state.stats[k]||0)+v)
+        : Math.max(0,(state.stats[k]||0)-v);
+    });
+  }
   save();
   renderAll();
   const newLv = calcLv(totalXP());
@@ -925,7 +942,7 @@ function buildBookMarkdown(){
   lines.push(`## クエスト（${state.done.length} / ${QUESTS.length} 達成）`);
   QUESTS.forEach((q,i) => {
     if(q.counter){
-      lines.push(`- ${q.name}: ${state.dateApoCount||0}回`);
+      lines.push(`- ${q.name}: ${state[q.countKey]||0}回`);
       return;
     }
     lines.push(`- [${state.done.includes(i)?'x':' '}] ${q.name}`);
