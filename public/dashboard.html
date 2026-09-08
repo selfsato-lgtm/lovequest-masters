@@ -482,10 +482,10 @@ function statValue(key){
 const QUESTS = [
   {name:'タイプ診断マスター',   desc:'恋愛式学16タイプを理解する(1タイプ理解ごとに+1P、16タイプ全て理解でボーナス+100XP)', icon:'🔮', multi:true, items:AVATARS.map(a=>a.name), perItemXP:1, xp:100, reward:{コミュ力:15,共感力:10}},
   {name:'プロフィール写真改善', desc:'FANTS内「外見力基礎講座」を受講・完了する', icon:'📸',xp:80,  reward:{外見力:20}},
-  {name:'タイプ別ファッション講座', desc:'FANTS内の資料を視聴する(1つ視聴ごとに+10P、2つ視聴でボーナス+20XP)', icon:'👔', multi:true, items:[
+  {name:'タイプ別ファッション講座', desc:'FANTS内の資料を視聴する(1つ視聴ごとに外見力+10、2つ視聴で合計+20)', icon:'👔', multi:true, items:[
     {label:'タイプ別女性ファッションの見極めガイド', url:'https://bmen.jp/pdf/2W8ngN3dJc.pdf'},
     {label:'タイプ別女性が好む男性ファッションガイド', url:'https://bmen.jp/pdf/tQUNciFEp2.pdf'},
-  ], perItemXP:10, xp:0, reward:{外見力:20}},
+  ], perItemReward:{外見力:10}, xp:0, reward:{}},
   {name:'マッチングアプリ完全解説マニュアル', desc:'FANTS内「マッチングアプリ完全解説マニュアル」を学習する', icon:'📘',xp:60, reward:{コミュ力:15}},
   {name:'マッチングアプリ登録', desc:'アプリを始める第一歩',         icon:'📱',xp:50,  reward:{コミュ力:10}},
   {name:'デートアポクリア！',   desc:'デートへ誘ってOKされたら押す(1回ごとに+0.5XP、何度でも加算可能)', icon:'📅', counter:true, perClickXP:0.5},
@@ -546,7 +546,7 @@ function load(){
 function totalXP(){
   const questXP = QUESTS.reduce((s,q,i)=>s+(state.done.includes(i)?q.xp:0),0);
   // multi系クエスト(タイプ診断マスター/タイプ別ファッション講座など)は1項目チェックごとに+perItemXP(ボーナスは上のQUESTS達成分でカウント済み)
-  const multiXP = QUESTS.filter(q=>q.multi).reduce((s,q)=>s+(state.multiChecks[q.name]||[]).length*q.perItemXP,0);
+  const multiXP = QUESTS.filter(q=>q.multi&&q.perItemXP).reduce((s,q)=>s+(state.multiChecks[q.name]||[]).length*q.perItemXP,0);
   const dateApoXP = (state.dateApoCount||0) * 0.5; // デートアポクリア！1回ごとに+0.5XP
   return questXP + multiXP + dateApoXP;
 }
@@ -712,8 +712,16 @@ function renderQuests(){
     let rewardLine;
     if(q.counter){
       rewardLine = `1回+${q.perClickXP}XP（合計 ${(state.dateApoCount||0)*q.perClickXP}XP）`;
+    } else if(q.multi){
+      const perItemTxt = q.perItemReward
+        ? `1つ視聴ごとに${Object.entries(q.perItemReward).map(([k,v])=>`${k}+${v}`).join('/')}`
+        : `理解1つごとに+${q.perItemXP}P`;
+      const bonusParts = [];
+      if(rewardTxt) bonusParts.push(rewardTxt);
+      if(q.xp) bonusParts.push(`+${q.xp}XP`);
+      rewardLine = `🎁 ${perItemTxt}${bonusParts.length? ` ／ 全部達成でボーナス${bonusParts.join(' / ')}`:''}`;
     } else {
-      rewardLine = `🎁 ${rewardTxt}  (+${q.xp} XP${q.multi?` ／ 1つ+${q.perItemXP}P`:''})`;
+      rewardLine = `🎁 ${rewardTxt}  (+${q.xp} XP)`;
     }
     div.innerHTML = `
       <span class="q-icon">${q.icon}</span>
@@ -757,20 +765,31 @@ function toggleMultiItem(questName, label){
   const prevLv = calcLv(totalXP());
   const checks = state.multiChecks[questName] || (state.multiChecks[questName] = []);
   const idx = checks.indexOf(label);
+  const turningOn = idx < 0;
   if(idx >= 0) checks.splice(idx,1);
   else checks.push(label);
 
-  // 全項目チェックしたらそのクエストを自動達成扱いにする(ボーナスXP+ステータス付与)。1つでも外れたら未達成に戻す(付与済みのボーナスも取り消す)
   const qi = QUESTS.findIndex(q => q.name === questName);
   const q = QUESTS[qi];
+
+  // 項目を1つチェック/解除するごとに、対象ステータスへ直接反映(perItemRewardが設定されている場合)
+  if(q.perItemReward){
+    Object.entries(q.perItemReward).forEach(([k,v])=>{
+      state.stats[k] = turningOn
+        ? Math.min(100,(state.stats[k]||0)+v)
+        : Math.max(0,(state.stats[k]||0)-v);
+    });
+  }
+
+  // 全項目チェックしたらそのクエストを自動達成扱いにする(ボーナスXP+ステータス付与、あれば)。1つでも外れたら未達成に戻す(付与済みのボーナスも取り消す)
   const wasDone = state.done.includes(qi);
   const nowComplete = checks.length === q.items.length;
   if(nowComplete && !wasDone){
     state.done.push(qi);
-    Object.entries(q.reward).forEach(([k,v])=>{ state.stats[k] = Math.min(100,(state.stats[k]||0)+v); });
+    Object.entries(q.reward||{}).forEach(([k,v])=>{ state.stats[k] = Math.min(100,(state.stats[k]||0)+v); });
   } else if(!nowComplete && wasDone){
     state.done.splice(state.done.indexOf(qi),1);
-    Object.entries(q.reward).forEach(([k,v])=>{ state.stats[k] = Math.max(0,(state.stats[k]||0)-v); });
+    Object.entries(q.reward||{}).forEach(([k,v])=>{ state.stats[k] = Math.max(0,(state.stats[k]||0)-v); });
   }
   save();
   renderAll();
