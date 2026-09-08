@@ -78,7 +78,7 @@ export default async function handler(req, res) {
     const maxAgeSec = Math.floor(SESSION_MAX_AGE_MS / 1000);
     res.setHeader('Set-Cookie', `${SESSION_COOKIE_NAME}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAgeSec}`);
 
-    let next = '/dashboard.html';
+    let next = '/index.html';
     try {
       const decoded = decodeURIComponent(state || '');
       if (decoded.startsWith('/')) next = decoded;
