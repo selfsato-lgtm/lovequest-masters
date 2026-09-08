@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   const proto = req.headers['x-forwarded-proto'] || 'https';
   const redirectUri = `${proto}://${host}/api/auth/callback`;
 
-  const next = typeof req.query.next === 'string' && req.query.next.startsWith('/') ? req.query.next : '/dashboard.html';
+  const next = typeof req.query.next === 'string' && req.query.next.startsWith('/') ? req.query.next : '/index.html';
 
   const params = new URLSearchParams({
     client_id: clientId,
