@@ -473,7 +473,7 @@ function statValue(key){
     const checkedBonus = (state.manualDone||[]).filter(k=>src.includes(k)).length * 15;
     return Math.min(100, Math.round(avg + checkedBonus));
   }
-  if(key==='経験値') return Math.min(100, Math.round(totalXP()/3200*100) + (state.mindmapCount||0)*5 + (state.impassCount||0)*5 + (state.dateLogs||[]).length*10);
+  if(key==='経験値') return Math.min(100, Math.round(totalXP()/1600*100) + (state.mindmapCount||0)*5 + (state.impassCount||0)*5 + (state.dateLogs||[]).length*10);
   if(key==='分析力') return Math.min(100, (state.impassCount||0)*10);
   return Math.min(100, state.stats[key]||0);
 }
