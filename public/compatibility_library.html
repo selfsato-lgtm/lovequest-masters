@@ -66,13 +66,13 @@ body{font-family:'Yu Gothic UI','Hiragino Sans','Meiryo',sans-serif;
 .home-item{background:var(--card);border:1px solid #2a2a4a;border-radius:12px;padding:12px 4px;
   text-align:center;cursor:pointer}
 .home-item:hover{border-color:var(--gold)}
-.home-item .icon{display:block;margin:0 auto;width:34px;height:34px;object-fit:contain;border-radius:8px}
-.home-item .icon.icon-fallback{font-size:24px;width:auto;height:auto}
+.home-item .icon{display:block;margin:0 auto;width:64px;height:64px;object-fit:contain;border-radius:10px}
+.home-item .icon.icon-fallback{font-size:44px;width:auto;height:auto}
 .home-item .name{font-size:10.5px;margin-top:4px}
 
 .welcome{text-align:center;margin-bottom:18px}
-.welcome .w-icon{width:56px;height:56px;object-fit:contain;border-radius:10px;margin:0 auto}
-.welcome .w-icon.icon-fallback{font-size:44px;width:auto;height:auto}
+.welcome .w-icon{width:120px;height:120px;object-fit:contain;border-radius:14px;margin:0 auto}
+.welcome .w-icon.icon-fallback{font-size:88px;width:auto;height:auto}
 .welcome .w-title{font-size:16px;font-weight:900;color:var(--white);margin-top:6px}
 .welcome .w-sub{font-size:11.5px;color:var(--muted);margin-top:3px}
 
@@ -157,7 +157,7 @@ body{font-family:'Yu Gothic UI','Hiragino Sans','Meiryo',sans-serif;
   <div class="topbar">
     <div class="hdr-side left">
       <button class="hamburger" onclick="toggleSidebar()">☰</button>
-      <a class="portal-back" href="index.html">← <span class="pb-txt">ポータルへ戻る</span></a>
+      <a class="portal-back" href="index.html" onclick="location.href='index.html?t='+Date.now();return false;">← <span class="pb-txt">ポータルへ戻る</span></a>
     </div>
     <button class="home-link" onclick="goHome()" title="TOPに戻る">
       <div class="avatar" id="topAvatar">🔮</div>

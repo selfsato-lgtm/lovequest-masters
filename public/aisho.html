@@ -71,7 +71,7 @@
 </head>
 <body>
 <header>
-  <a class="portal-back" href="index.html">← ポータルへ戻る</a>
+  <a class="portal-back" href="index.html" onclick="location.href='index.html?t='+Date.now();return false;">← ポータルへ戻る</a>
   <h1>💞 相性診断ツール|恋愛式学</h1>
   <p>自分と相手のタイプを選ぶと、仕事・恋愛・結婚の相性と「付き合い方のコツ」が出ます</p>
   <a class="nav" href="impass.html" target="_blank" rel="noopener">🔮 タイプがまだ不明 → インパス診断ツールへ</a>
@@ -84,6 +84,8 @@
       <select id="meMain"></select>
       <label>副タイプ(2番目・任意)</label>
       <select id="meSub"></select>
+      <label>表現スタイル(任意・恋愛式学64分類)</label>
+      <select id="meStyle"></select>
       <div class="typebadge" id="meBadge">―</div>
     </div>
     <div class="pcard you">
@@ -92,6 +94,8 @@
       <select id="youMain"></select>
       <label>副タイプ(2番目・任意)</label>
       <select id="youSub"></select>
+      <label>表現スタイル(任意・恋愛式学64分類)</label>
+      <select id="youStyle"></select>
       <div class="typebadge" id="youBadge">―</div>
     </div>
   </div>
@@ -212,29 +216,66 @@ const DETAIL16 = {
  "占い師":["魔法使い×僧侶","ISFP 冒険家","一見太陽に見えるフェイク持ちの穏やかな観察者。掴みどころがない。","段取り・危機回避・全体把握","陰気なオーラ/自己主張せず頭の中グルグル/新環境を嫌いネガティブ寄り"]
 };
 
+// 恋愛式学64分類(16タイプ×表現スタイル+α/+β/-α/-β)。player_encyclopedia.htmlと同一データ
+const EXPRESSION_STYLES = {
+  '+α': { axis: '情緒×情熱', desc: '感情を素直に表現し、自分から積極的に関わっていくスタイル。「好き」「嬉しい」「楽しい」が表情や言葉に出やすく、人との距離を縮めるのが得意' },
+  '+β': { axis: '情緒×冷静', desc: '感情は豊かだが表現は控えめで受容的なスタイル。相手を優しく見守り、聞き役になることが多く、静かな安心感を与える' },
+  '-α': { axis: '合理×情熱', desc: '論理的に物事を考えながらも、自ら積極的に行動するスタイル。決断力があり、説明力や目標達成力にも優れる' },
+  '-β': { axis: '合理×冷静', desc: '感情より分析や客観性を優先し、一歩引いて状況を見るスタイル。慎重で観察力が高く、必要以上に感情を表へ出さない' },
+};
+const EXPRESSION_VARIANTS = {
+  '妖精': { '+α': '感情をストレートに伝え、愛情表現が豊かで周囲を明るくする妖精。', '+β': '穏やかで聞き役になりやすく、静かな優しさで寄り添う妖精。', '-α': '思いやりはあるが、感情より状況を見ながら積極的に行動する妖精。', '-β': '感情は深いが表現は控えめで、静かな安心感を与える妖精。' },
+  '牧師': { '+α': '積極的に相手を支え、優しさを言葉や行動で伝える牧師。', '+β': '静かに見守り、必要な時だけそっと寄り添う牧師。', '-α': '冷静に状況を判断しながら、率先して人を支える牧師。', '-β': '感情は控えめだが、誠実な行動で信頼を築く牧師。' },
+  '占い師': { '+α': '感受性豊かで、直感を積極的に表現し人を惹きつける占い師。', '+β': '空気や感情を静かに感じ取り、多くを語らず寄り添う占い師。', '-α': '直感を論理的に整理し、自信を持って発信する占い師。', '-β': '直感を胸に秘め、一人で静かに本質を見抜く占い師。' },
+  '賢者': { '+α': '知識だけでなく、人の気持ちにも寄り添いながら教える賢者。', '+β': '穏やかに話を聞き、相手の理解を深めるサポート役の賢者。', '-α': '知識を武器に積極的に発信し、人を導く賢者。', '-β': '一人で探究を深め、論理を追求する研究者型の賢者。' },
+  '盗賊': { '+α': '自由を楽しみながら、人を巻き込んで場を盛り上げる盗賊。', '+β': '自由を愛しつつ、人との心地よい距離感を大切にする盗賊。', '-α': '自由な発想を武器に、積極的に挑戦を続ける盗賊。', '-β': '冷静に状況を見極めながら、自分のペースを貫く盗賊。' },
+  '道化師': { '+α': 'リアクション豊かで、人を笑顔にするコミュニケーションの達人。', '+β': '親しみやすいが、本音は限られた相手だけに見せる道化師。', '-α': '知識や理論を軽快に発信し、人を惹きつける道化師。', '-β': '笑顔の裏で常に分析し、本質を見抜いている道化師。' },
+  '騎士': { '+α': '明るく行動的で、人を巻き込みながら挑戦を楽しむ騎士。', '+β': '社交的だが、相手への気配りも忘れない騎士。', '-α': '論理的に考えながらも、迷わず挑戦していく騎士。', '-β': '落ち着いて状況を見極め、堅実に行動する騎士。' },
+  '忍者': { '+α': '信頼する人には情熱的に尽くし、積極的に支える忍者。', '+β': '静かに相手を見守り、安心感を与える忍者。', '-α': '戦略を描き、自ら先頭に立って実行する忍者。', '-β': '感情を表に出さず、冷静に最善策を積み重ねる忍者。' },
+  '魔法戦士': { '+α': '学びや発見を情熱的に共有し、人を刺激する魔法戦士。', '+β': '探究した知識を穏やかに伝え、人を育てる魔法戦士。', '-α': '知識を武器に積極的に挑戦し、新しい道を切り開く魔法戦士。', '-β': '論理と分析を深め、自分だけの理論を構築する魔法戦士。' },
+  '勇者': { '+α': '愛情も情熱もストレートに伝え、人を鼓舞する勇者。', '+β': '熱い気持ちを持ちながら、仲間を優しく支える勇者。', '-α': '責任感と行動力で先頭を走るリーダータイプの勇者。', '-β': '冷静さを持ちながら、着実に使命を果たす勇者。' },
+  '聖戦士': { '+α': '信念と優しさを積極的に伝え、人を導く聖戦士。', '+β': '静かな思いやりで、人を支え続ける聖戦士。', '-α': '信念を貫き、自ら行動して道を示す聖戦士。', '-β': '多くを語らず、ブレない姿勢で信頼を集める聖戦士。' },
+  '兵士': { '+α': '誠実さに温かさを加え、人を安心させる兵士。', '+β': '穏やかで堅実、縁の下から支える兵士。', '-α': '責任感を持って率先して動く実行型の兵士。', '-β': '冷静な判断と安定感で組織を支える兵士。' },
+  '狂戦士': { '+α': '感情も勢いも全開で、人を巻き込むエネルギッシュな狂戦士。', '+β': '情熱は秘めつつ、仲間への情を大切にする狂戦士。', '-α': '勝負勘と決断力で道を切り開く狂戦士。', '-β': '闘志を内に秘め、勝機を冷静に待つ狂戦士。' },
+  '姫': { '+α': '愛情や喜びを素直に表現し、周囲を魅了する姫。', '+β': '上品で穏やか、人を安心させる雰囲気を持つ姫。', '-α': '気品と決断力を兼ね備え、自ら道を切り開く姫。', '-β': '感情を抑えながらも、芯の強さと知性を感じさせる姫。' },
+  'シスター': { '+α': '献身的な愛情を積極的に表現し、人を包み込むシスター。', '+β': '静かな優しさで、相手を見守り続けるシスター。', '-α': '冷静な判断力を持ちながら、人のために率先して動くシスター。', '-β': '感情を表に出さず、変わらない愛情で支えるシスター。' },
+  '魔道士': { '+α': '独自の世界観や感性を情熱的に表現する魔道士。', '+β': '穏やかに感性を育み、自分の世界を大切にする魔道士。', '-α': '独創的な理論や発想を積極的に発信する魔道士。', '-β': '一人で深く思考し、自分だけの哲学を築く魔道士。' },
+};
+const STYLE_KEYS = ['+α','+β','-α','-β'];
+
 function fillSelect(sel, noneLabel){
   let html = `<option value="">${noneLabel}</option>`;
   KEYS.forEach(k=> html += `<option value="${k}">${EMOJI[k]} ${T[k]}</option>`);
   sel.innerHTML = html;
 }
-const meMain=document.getElementById("meMain"), meSub=document.getElementById("meSub"),
-      youMain=document.getElementById("youMain"), youSub=document.getElementById("youSub");
+function fillStyleSelect(sel){
+  let html = `<option value="">(未選択)</option>`;
+  STYLE_KEYS.forEach(k=> html += `<option value="${k}">${k}(${EXPRESSION_STYLES[k].axis})</option>`);
+  sel.innerHTML = html;
+}
+const meMain=document.getElementById("meMain"), meSub=document.getElementById("meSub"), meStyle=document.getElementById("meStyle"),
+      youMain=document.getElementById("youMain"), youSub=document.getElementById("youSub"), youStyle=document.getElementById("youStyle");
 fillSelect(meMain,"(選択してください)"); fillSelect(meSub,"(なし)"); fillSelect(youMain,"(選択してください)"); fillSelect(youSub,"(なし)");
+fillStyleSelect(meStyle); fillStyleSelect(youStyle);
 // デフォルトは未選択
-[meMain,meSub,youMain,youSub].forEach(s=> s.addEventListener("change", render));
+[meMain,meSub,meStyle,youMain,youSub,youStyle].forEach(s=> s.addEventListener("change", render));
 
 function clearAll(){
-  meMain.value=""; meSub.value=""; youMain.value=""; youSub.value="";
+  meMain.value=""; meSub.value=""; meStyle.value=""; youMain.value=""; youSub.value=""; youStyle.value="";
   render();
+}
+function typeCode(main, sub){
+  if(!sub || sub===main) return NAME16[main];
+  return NAME16[main+","+sub] || null;
 }
 function copyResult(){
   const mM=meMain.value, yM=youMain.value;
   if(!mM || !yM){ alert("自分と相手の主タイプを選択してください"); return; }
-  const mS=meSub.value, yS=youSub.value;
+  const mS=meSub.value, yS=youSub.value, mSt=meStyle.value, ySt=youStyle.value;
   let lines=[];
   lines.push("【恋愛式学 相性診断】");
-  lines.push("自分: "+typeName(mM,mS));
-  lines.push("相手: "+typeName(yM,yS));
+  lines.push("自分: "+typeName(mM,mS)+(mSt?" ["+mSt+"]":""));
+  lines.push("相手: "+typeName(yM,yS)+(ySt?" ["+ySt+"]":""));
   [["love","恋愛"],["work","仕事"],["marry","結婚"]].forEach(([c,label])=>{
     const r1=rankOf(mM,yM,c), r2=rankOf(yM,mM,c);
     const g=GRADES[Math.round((r1+r2)/2)];
@@ -246,6 +287,13 @@ function copyResult(){
   lines.push("");
   lines.push("交際後のリアル(相手="+T[yM]+"): "+COUPLE[yM]);
   lines.push("コミュ式: 自分"+COMMOP[mM]+" / 相手"+COMMOP[yM]);
+  if(mSt || ySt){
+    lines.push("");
+    lines.push("【表現スタイル(恋愛式学64分類)】");
+    const mCode=typeCode(mM,mS), yCode=typeCode(yM,yS);
+    if(mSt && mCode && EXPRESSION_VARIANTS[mCode]) lines.push("自分["+mSt+"]: "+EXPRESSION_VARIANTS[mCode][mSt]);
+    if(ySt && yCode && EXPRESSION_VARIANTS[yCode]) lines.push("相手["+ySt+"]: "+EXPRESSION_VARIANTS[yCode][ySt]);
+  }
   navigator.clipboard.writeText(lines.join("\n")).then(()=>alert("結果をコピーしました"));
 }
 
@@ -269,10 +317,23 @@ function complementNote(main, sub){
   return "";
 }
 
+// 表現スタイルの組み合わせから一言メモを出す(情緒⇄合理、情熱⇄冷静の噛み合わせ)
+function styleNote(mSt, ySt){
+  if(!mSt || !ySt) return "";
+  const mAxis=EXPRESSION_STYLES[mSt].axis, yAxis=EXPRESSION_STYLES[ySt].axis;
+  const mEmo=mSt[0]==="+", ySt_emo=ySt[0]==="+", mHot=mSt[1]==="α", yHot=ySt[1]==="α";
+  let notes=[];
+  if(mEmo!==ySt_emo) notes.push("感情表現の出し方(情緒型/合理型)が違うタイプ同士。表に出す側が「なぜ反応が薄いんだろう」と不安にならないよう、出さない側は言葉で明示的に気持ちを伝える一工夫を。");
+  else notes.push("感情表現の出し方(情緒型/合理型)が同じタイプ同士。お互いのペースが自然と噛み合いやすい組み合わせ。");
+  if(mHot!==yHot) notes.push("さらに、積極性(α/β)も逆なので、関係を前に進める役と受け止める役が自然に分かれる相補的な関係になりやすい。");
+  else notes.push("さらに、積極性(α/β)も同じなので、動くタイミングも似ていて息が合いやすい一方、どちらも動かないと停滞しがちな点は注意。");
+  return notes.join("");
+}
+
 function render(){
-  const mM=meMain.value, mS=meSub.value, yM=youMain.value, yS=youSub.value;
-  document.getElementById("meBadge").textContent = mM? EMOJI[mM]+" "+typeName(mM,mS) : "―";
-  document.getElementById("youBadge").textContent = yM? EMOJI[yM]+" "+typeName(yM,yS) : "―";
+  const mM=meMain.value, mS=meSub.value, mSt=meStyle.value, yM=youMain.value, yS=youSub.value, ySt=youStyle.value;
+  document.getElementById("meBadge").textContent = mM? EMOJI[mM]+" "+typeName(mM,mS)+(mSt?" "+mSt:"") : "―";
+  document.getElementById("youBadge").textContent = yM? EMOJI[yM]+" "+typeName(yM,yS)+(ySt?" "+ySt:"") : "―";
 
   if(!mM || !yM){
     document.getElementById("result").innerHTML =
@@ -329,6 +390,21 @@ function render(){
     <div class="card">
       <h3>🧮 コミュニケーション四則演算(ジョニー式)</h3>
       <div class="dirtx">🙋 自分(${T[mM]})= <b>${COMMOP[mM]}</b><br>💗 相手(${T[yM]})= <b>${COMMOP[yM]}</b><br><span class="pure">相手の演算に合わせて接し方を切り替えると噛み合います。</span></div>
+    </div>
+    ${renderStyleCard(mM,mS,mSt,yM,yS,ySt)}`;
+}
+function renderStyleCard(mM,mS,mSt,yM,yS,ySt){
+  if(!mSt && !ySt) return "";
+  const mCode=typeCode(mM,mS), yCode=typeCode(yM,yS);
+  const mVar = mSt && mCode && EXPRESSION_VARIANTS[mCode] ? EXPRESSION_VARIANTS[mCode][mSt] : null;
+  const yVar = ySt && yCode && EXPRESSION_VARIANTS[yCode] ? EXPRESSION_VARIANTS[yCode][ySt] : null;
+  const note = styleNote(mSt, ySt);
+  return `
+    <div class="card">
+      <h3>🧬 表現スタイル(恋愛式学64分類)</h3>
+      ${mVar? `<div class="dir me"><div class="dirhd">🙋 自分 ${mSt}(${EXPRESSION_STYLES[mSt].axis})</div><div class="dirtx">${mVar}</div></div>` : ""}
+      ${yVar? `<div class="dir you"><div class="dirhd">💗 相手 ${ySt}(${EXPRESSION_STYLES[ySt].axis})</div><div class="dirtx">${yVar}</div></div>` : ""}
+      ${note? `<div class="tagline">💡 <b>(資料外・独自の補足コメント)</b> ${note}</div>` : `<div class="tagline">💡 両方選ぶと、表現スタイルの噛み合わせコメントも表示されます。</div>`}
     </div>`;
 }
 // 16タイプ早見表: 行タップで詳細を開閉

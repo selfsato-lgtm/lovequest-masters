@@ -47,11 +47,18 @@ header p{font-size:11px;color:var(--muted);margin-top:3px}
 
 /* ── DETAIL / PLAYER SHEET ── */
 .sheet{background:var(--card);border:1px solid #2a2a4a;border-radius:14px;padding:16px;margin-top:10px}
-.sheet-head{display:flex;align-items:center;gap:14px;border-bottom:1px solid #2a2a4a;padding-bottom:12px;margin-bottom:12px}
-.sheet-head .icon{width:56px;height:56px;object-fit:contain;border-radius:10px;flex-shrink:0}
-.sheet-head .icon.icon-fallback{font-size:48px;width:auto;height:auto}
-.sheet-head .name{font-size:20px;font-weight:900;color:var(--gold)}
-.sheet-head .comp{font-size:12px;color:var(--muted)}
+.sheet-head{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;
+  border-bottom:1px solid #2a2a4a;padding-bottom:14px;margin-bottom:12px}
+.sheet-head .icon{width:min(78vw,320px);height:min(78vw,320px);object-fit:contain;border-radius:16px;
+  flex-shrink:0;background:var(--card2)}
+.sheet-head .icon.icon-fallback{font-size:120px;width:auto;height:auto;background:none}
+.sheet-head .name{font-size:24px;font-weight:900;color:var(--gold);margin-top:4px}
+.sheet-head .comp{font-size:12.5px;color:var(--muted)}
+.sheet-head-row{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:nowrap;width:100%}
+.sheet-head-row .icon{width:min(48vw,220px);height:min(48vw,220px)}
+.radar-wrap{flex-shrink:0;width:min(40vw,170px);margin:0 auto}
+.radar-wrap svg{width:100%;height:auto;display:block}
+.radar-note{font-size:9px;color:var(--muted);text-align:center;margin-top:2px}
 .sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;font-size:12.5px}
 .sheet-grid .lbl{color:var(--muted);font-size:10.5px;margin-bottom:3px}
 .sheet-grid .val{color:var(--light)}
@@ -131,7 +138,7 @@ header p{font-size:11px;color:var(--muted);margin-top:3px}
 <body>
 
 <header>
-  <div class="hdr-side left"><a class="portal-back" href="index.html">← <span class="pb-txt">ポータルへ戻る</span></a></div>
+  <div class="hdr-side left"><a class="portal-back" href="index.html" onclick="location.href='index.html?t='+Date.now();return false;">← <span class="pb-txt">ポータルへ戻る</span></a></div>
   <div class="hdr-titles">
     <h1>📖 LOVEQUESTプレイヤー図鑑</h1>
     <p>恋愛式学 × RPG化プロトタイプ ｜ 16タイプ × 16タイプ = 256通りの相性を自動生成</p>
@@ -489,6 +496,61 @@ const EXPRESSION_VARIANTS = {
   '魔道士': { '+α': '独自の世界観や感性を情熱的に表現する魔道士。', '+β': '穏やかに感性を育み、自分の世界を大切にする魔道士。', '-α': '独創的な理論や発想を積極的に発信する魔道士。', '-β': '一人で深く思考し、自分だけの哲学を築く魔道士。' },
 };
 
+// ─── RADAR CHART（継承マスター資料「〇〇タイプのエネルギー」レーダーチャート準拠、目視参考値）───
+// 軸: 社交性(top)→行動力→思考力→メンタル力→協調性→決断力(時計回り)、各0-100
+const RADAR_AXES = ['社交性','行動力','思考力','メンタル力','協調力','楽観性'];
+// 戦士/踊り子/魔法使い/僧侶4基礎タイプの実チャート（目盛り付き画像から実測）を基準点とし、
+// 16タイプ＝主(60%)+副(40%)のブレンドで算出。狂戦士/姫/魔道士/シスターは基礎タイプそのまま（純粋な組み合わせ）
+const RADAR_STATS = {
+  '狂戦士':  [60,85,75,90,15,55],
+  '勇者':    [90,80,70,60,60,70],
+  '魔法戦士':[70,80,80,70,40,40],
+  '聖戦士':  [80,80,80,80,70,60],
+  '騎士':    [90,70,65,65,65,80],
+  '姫':      [80,100,80,90,20,50],
+  '盗賊':    [70,70,70,40,40,40],
+  '妖精':    [90,70,50,50,60,90],
+  '忍者':    [40,50,90,80,40,40],
+  '道化師':  [50,70,90,60,40,40],
+  '魔道士':  [10,30,100,70,10,30],
+  '占い師':  [30,50,90,70,40,40],
+  '兵士':    [60,60,60,40,80,80],
+  '牧師':    [70,50,70,50,90,70],
+  '賢者':    [50,50,60,65,85,60],
+  'シスター':[40,30,65,40,100,60],
+};
+function renderRadar(code){
+  const vals = RADAR_STATS[code];
+  if(!vals) return '';
+  const cx=100, cy=100, R=78, N=RADAR_AXES.length;
+  const pt = (i, r) => {
+    const ang = (-90 + i * 360/N) * Math.PI/180;
+    return [cx + r*Math.cos(ang), cy + r*Math.sin(ang)];
+  };
+  const rings = [0.2,0.4,0.6,0.8,1.0].map(f=>{
+    const p = RADAR_AXES.map((_,i)=>pt(i, R*f).join(',')).join(' ');
+    return `<polygon points="${p}" fill="none" stroke="#4a4a6a" stroke-width="1"/>`;
+  }).join('');
+  const spokes = RADAR_AXES.map((_,i)=>{
+    const [x,y] = pt(i,R);
+    return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#4a4a6a" stroke-width="1"/>`;
+  }).join('');
+  const ticks = [20,40,60,80,100].map(v=>{
+    const y = cy - R*(v/100);
+    return `<text x="${cx+3}" y="${y+3}" font-size="9" fill="#8888a8">${v}</text>`;
+  }).join('');
+  const shapePts = vals.map((v,i)=>pt(i, R*(v/100)).join(',')).join(' ');
+  const labels = RADAR_AXES.map((label,i)=>{
+    const [x,y] = pt(i, R+16);
+    return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="11" fill="#b8b8d0">${label}</text>`;
+  }).join('');
+  return `<div class="radar-wrap"><svg viewBox="0 0 200 200">
+    ${rings}${spokes}${ticks}
+    <polygon points="${shapePts}" fill="var(--gold)" fill-opacity="0.5" stroke="var(--gold)" stroke-width="2.5"/>
+    ${labels}
+  </svg><div class="radar-note">継承マスター資料の「タイプのエネルギー」より</div></div>`;
+}
+
 // avatarフォルダのPNGを参照（差し替え可能）。読み込み失敗時は絵文字にフォールバック
 function iconImg(t, cls){
   const c = cls ? `icon ${cls}` : 'icon';
@@ -562,7 +624,10 @@ function openDetail(idx){
   const loc = blendTraits(t,'loc',3,2), like = blendTraits(t,'like',3,2), weak = blendTraits(t,'weak',3,2);
   document.getElementById('detailSheet').innerHTML = `
     <div class="sheet-head">
-      ${iconImg(t)}
+      <div class="sheet-head-row">
+        ${iconImg(t)}
+        ${renderRadar(t.code)}
+      </div>
       <div><div class="name">${t.code}</div><div class="comp">${BASE[t.p].name}(主) × ${BASE[t.s].name}(副)</div></div>
     </div>
     <div class="sheet-grid">
@@ -598,7 +663,7 @@ function renderMasterTraits(t){
   if(!m) return '';
   let html = `<div class="mt-wrap"><div class="mt-heading">📜 継承マスター資料｜詳細特性</div>`;
   if(m.personality) html += `<div class="mt-section"><div class="mt-title">性格</div>${traitList(m.personality)}</div>`;
-  if(m.values) html += `<div class="mt-section"><div class="mt-title">価値観</div>${traitValueList(m.values)}</div>`;
+  if(m.values) html += `<div class="mt-section"><div class="mt-title">価値観</div>${m.values.every(x=>typeof x==='string') ? traitList(m.values) : traitValueList(m.values)}</div>`;
   if(m.communication) html += `<div class="mt-section"><div class="mt-title">コミュニケーションあるある</div>${traitList(m.communication)}</div>`;
   if(m.strengths) html += `<div class="mt-section"><div class="mt-title">長所あるある</div>${traitList(m.strengths)}</div>`;
   if(m.weaknesses) html += `<div class="mt-section"><div class="mt-title">短所あるある</div>${traitList(m.weaknesses)}</div>`;
