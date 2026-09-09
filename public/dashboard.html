@@ -470,12 +470,12 @@ const RADAR_STATS = [
 const ANALYSIS_STAT = {key:'分析力', icon:'🧠', color:'#4A9EDB', desc:'インパス診断ツールの使用回数で上がる（自動計算）', derived:true};
 // LCIQマニュアル動画視聴チェックリスト。チェックすると対象ステータスに+10（外すと-10）。amount指定があればそれを使う
 const MANUAL_COURSES = [
-  {key:'認識力', name:'LCIQ認識力向上マニュアル'},
-  {key:'表現力', name:'表現力アップ講座'},
-  {key:'楽転力', name:'楽転力（ポジティブ変換）講座'},
-  {key:'共感力', name:'共感力向上講座'},
-  {key:'継続力', name:'継続力アップ講座'},
-  {key:'魅了力', name:'魅了力UP!動画講座', amount:30},
+  {key:'認識力', name:'LCIQ認識力向上マニュアル', amount:30},
+  {key:'表現力', name:'表現力アップ講座', amount:30},
+  {key:'楽転力', name:'楽転力（ポジティブ変換）講座', amount:30},
+  {key:'共感力', name:'共感力向上講座', amount:30},
+  {key:'継続力', name:'継続力アップ講座', amount:30},
+  {key:'魅了力', name:'魅了力UP!動画講座', amount:30, derived:true},
 ];
 // レーダーチャート対象外の追加ステータス
 const EXTRA_STATS = [
@@ -1014,10 +1014,10 @@ function toggleManual(key){
   const idx = state.manualDone.indexOf(key);
   if(idx >= 0){
     state.manualDone.splice(idx,1);
-    if(!course || !course.amount) state.stats[key] = Math.max(0, (state.stats[key]||0) - amount);
+    if(!course || !course.derived) state.stats[key] = Math.max(0, (state.stats[key]||0) - amount);
   } else {
     state.manualDone.push(key);
-    if(!course || !course.amount) state.stats[key] = Math.min(100, (state.stats[key]||0) + amount);
+    if(!course || !course.derived) state.stats[key] = Math.min(100, (state.stats[key]||0) + amount);
   }
   save(); renderStats(); renderOverall();
 }
