@@ -158,6 +158,7 @@ main{display:grid;grid-template-columns:180px 1fr 280px;gap:12px;
 .q-name{font-size:12.5px;font-weight:700;color:var(--light)}
 .q-item.done .q-name{color:var(--green)}
 .q-desc{font-size:10.5px;color:var(--muted);margin-top:2px}
+.q-desc a{color:var(--gold);text-decoration:underline}
 .q-reward{font-size:10px;color:#888;margin-top:3px}
 .q-check{font-size:18px;flex-shrink:0;margin-top:1px}
 .q-item.done .q-check::before{content:'✅'}
@@ -498,7 +499,9 @@ function statValue(key){
     const checkedBonus = (state.manualDone||[]).filter(k=>src.includes(k)).length * 15;
     // 「魅了力UP!動画講座」を視聴済みなら直接+30(この項目はチェックリスト内だがsrcの6項目とは別枠)
     const videoBonus = (state.manualDone||[]).includes('魅了力') ? 30 : 0;
-    return Math.min(100, Math.round(avg + checkedBonus + videoBonus));
+    // 魅了力向上セミナー(multi系クエスト)は1トピック視聴ごとに+5
+    const seminarBonus = (state.multiChecks['魅了力向上セミナー']||[]).length * 5;
+    return Math.min(100, Math.round(avg + checkedBonus + videoBonus + seminarBonus));
   }
   if(key==='経験値') return Math.min(100, Math.round(totalXP()/1600*100) + (state.mindmapCount||0)*5 + (state.impassCount||0)*5 + (state.dateLogs||[]).length*0.5 + (state.dateApoCount||0)*0.5 + (state.confessionFailCount||0)*10);
   if(key==='分析力') return Math.min(100, (state.impassCount||0)*10);
@@ -550,22 +553,22 @@ const QUESTS = [
     '「支える」と「背負う」は違う',
     '2人だけの「パートナーシップ」を作る',
   ], perItemReward:{継続力:5}, xp:0, reward:{}},
-  {name:'認識力向上セミナー', desc:'FANTS資料(全4トピック)を視聴する(1トピックごとに認識力+5)', icon:'👁️', multi:true, items:[
+  {name:'認識力向上セミナー', desc:'FANTS資料(全4トピック)を視聴する(1トピックごとに認識力+5)。<a href="https://youtu.be/IRi6rP83rTI" target="_blank" rel="noopener">🎬動画</a> / <a href="https://docs.google.com/presentation/d/1RjbWw1TetijQzggKolb2l3DK9MTiDdPUwQQ_ZIOqpM0/edit" target="_blank" rel="noopener">📄資料</a>', icon:'👁️', multi:true, items:[
     '認識力とは(低い人の特徴)','認識力が低いままだと','認識力の上げ方','認識力を高めるとどんな未来が待ってるか',
   ], perItemReward:{認識力:5}, xp:0, reward:{}},
-  {name:'表現力向上セミナー', desc:'FANTS資料(全4トピック)を視聴する(1トピックごとに表現力+5)', icon:'🎤', multi:true, items:[
+  {name:'表現力向上セミナー', desc:'FANTS資料(全4トピック)を視聴する(1トピックごとに表現力+5)。<a href="https://youtu.be/UGEWNsdl3mw" target="_blank" rel="noopener">🎬動画</a> / <a href="https://docs.google.com/presentation/d/1jVB2JdNWkvgVDIRGYA8Y6URZpjZ2DS2CtbefmgymPi0/edit" target="_blank" rel="noopener">📄資料</a>', icon:'🎤', multi:true, items:[
     '表現力とは(低い人の特徴)','表現力が低いままだと','表現力の上げ方','表現力を高めるとどんな未来が待ってるか',
   ], perItemReward:{表現力:5}, xp:0, reward:{}},
-  {name:'楽転力向上セミナー', desc:'FANTS資料(全4トピック)を視聴する(1トピックごとに楽転力+5)', icon:'🔄', multi:true, items:[
+  {name:'楽転力向上セミナー', desc:'FANTS資料(全4トピック)を視聴する(1トピックごとに楽転力+5)。<a href="https://youtu.be/dLPqHvMWpHY" target="_blank" rel="noopener">🎬動画</a> / <a href="https://docs.google.com/presentation/d/142C2vGpaxtxWy3OywoplhewCu3eZhU-PVVsybjh_wNI/edit" target="_blank" rel="noopener">📄資料</a>', icon:'🔄', multi:true, items:[
     '楽転力とは(低い人の特徴)','楽転力が低いままだと','楽転力の上げ方','楽転力を高めるとどんな未来が待ってるか',
   ], perItemReward:{楽転力:5}, xp:0, reward:{}},
-  {name:'共感力向上セミナー', desc:'FANTS資料(全4トピック)を視聴する(1トピックごとに共感力+5)', icon:'🤝', multi:true, items:[
+  {name:'共感力向上セミナー', desc:'FANTS資料(全4トピック)を視聴する(1トピックごとに共感力+5)。<a href="https://youtu.be/h6zKA6apcu8" target="_blank" rel="noopener">🎬動画1</a> / <a href="https://youtu.be/tnEoREFWegc" target="_blank" rel="noopener">🎬動画2</a> / <a href="https://docs.google.com/presentation/d/12rw7Cc9MH6FPCxc4iqMXgmftQ9z1Ay3K_2l8H_qKsWE/edit" target="_blank" rel="noopener">📄資料</a>', icon:'🤝', multi:true, items:[
     '共感力とは(低い人の特徴)','共感力が低いままだと','共感力の上げ方','共感力を高めるとどんな未来が待ってるか',
   ], perItemReward:{共感力:5}, xp:0, reward:{}},
-  {name:'行動力向上セミナー', desc:'FANTS資料(全4トピック)を視聴する(1トピックごとに行動力+5)', icon:'🏃', multi:true, items:[
-    '行動力とは(低い人の特徴)','行動力が低いままだと','行動力の上げ方','行動力を高めるとどんな未来が待ってるか',
-  ], perItemReward:{行動力:5}, xp:0, reward:{}},
-  {name:'継続力向上セミナー', desc:'FANTS資料(全4トピック)を視聴する(1トピックごとに継続力+5)', icon:'🔥', multi:true, items:[
+  {name:'魅了力向上セミナー', desc:'FANTS資料(全4トピック)を視聴する(1トピックごとに魅了力+5)。<a href="https://youtu.be/xPW9Yh0LyBE" target="_blank" rel="noopener">🎬動画</a> / <a href="https://docs.google.com/presentation/d/1pz2VigXibNgsxVCvXzFwcVMUTlBJ-eHvIJ-ysYyZirM/edit" target="_blank" rel="noopener">📄資料</a>', icon:'💫', multi:true, items:[
+    '魅了力が低い人の特徴と原因','魅了力が低いままだと','魅了力の高い男性の特徴15選','魅了力の上げ方',
+  ], perItemReward:{魅了力:5}, xp:0, reward:{}},
+  {name:'継続力向上セミナー', desc:'FANTS資料(全4トピック)を視聴する(1トピックごとに継続力+5)。<a href="https://youtu.be/1DaQeIOJJC4" target="_blank" rel="noopener">🎬動画</a> / <a href="https://docs.google.com/presentation/d/1Wku4Rgw2Zlva15D6ydMdy4QRs7GJiOV8QhswgiKQEqc/edit" target="_blank" rel="noopener">📄資料</a>', icon:'🔥', multi:true, items:[
     '継続力とは(低い人の特徴)','継続力が低いままだと','継続力の上げ方','継続力を高めるとどんな未来が待ってるか',
   ], perItemReward:{継続力:5}, xp:0, reward:{}},
 ];
