@@ -170,7 +170,21 @@ main{display:grid;grid-template-columns:180px 1fr 280px;gap:12px;
 .q-type-chip:hover{border-color:#555}
 .q-type-chip.on{background:#0D1F0D;border-color:var(--green);color:var(--green)}
 .q-type-chip-link{font-size:11px;text-decoration:none;margin:0 4px 0 -2px;align-self:center}
-.q-counter-ctrl{margin-top:8px;display:flex;gap:6px}
+.q-counter-ctrl{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.q-info-btn{font-size:10px;padding:2px 8px;border-radius:10px;border:1px solid #444;
+  background:transparent;color:var(--muted);cursor:pointer;margin-left:6px}
+.q-info-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+.info-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:110;
+  align-items:center;justify-content:center;padding:16px}
+.info-modal-box{background:var(--card);border:1px solid #2a2a4a;border-radius:14px;
+  max-width:560px;width:100%;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+.info-modal-head{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid #2a2a4a;font-size:14px;font-weight:900;color:var(--gold)}
+.info-modal-close{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 6px}
+.info-modal-close:hover{color:var(--white)}
+.info-modal-body{padding:16px;overflow-y:auto;font-size:12.5px;line-height:1.9;color:var(--light)}
+.info-modal-body b{color:var(--gold)}
 
 /* ─── DATE LOG ─── */
 .datelog-wrap{max-width:1100px;margin:0 auto;padding:0 12px 24px}
@@ -242,6 +256,17 @@ main{display:grid;grid-template-columns:180px 1fr 280px;gap:12px;
   <h2>⚔️ アバターを選択してください</h2>
   <p>あなたの恋愛スタイルに近いキャラクターを選んで冒険を始めましょう</p>
   <div class="av-grid" id="av-grid"></div>
+</div>
+
+<!-- Quest Info Modal（クエストの補足ガイド用） -->
+<div id="infoModal" class="info-modal-overlay" onclick="if(event.target===this) closeInfoModal()">
+  <div class="info-modal-box">
+    <div class="info-modal-head">
+      <span id="infoModalTitle"></span>
+      <button class="info-modal-close" onclick="closeInfoModal()">✕</button>
+    </div>
+    <div id="infoModalBody" class="info-modal-body"></div>
+  </div>
 </div>
 
 <!-- Header -->
@@ -474,7 +499,7 @@ function statValue(key){
     const checkedBonus = (state.manualDone||[]).filter(k=>src.includes(k)).length * 15;
     return Math.min(100, Math.round(avg + checkedBonus));
   }
-  if(key==='経験値') return Math.min(100, Math.round(totalXP()/1600*100) + (state.mindmapCount||0)*5 + (state.impassCount||0)*5 + (state.dateLogs||[]).length*0.5 + (state.dateApoCount||0)*0.5);
+  if(key==='経験値') return Math.min(100, Math.round(totalXP()/1600*100) + (state.mindmapCount||0)*5 + (state.impassCount||0)*5 + (state.dateLogs||[]).length*0.5 + (state.dateApoCount||0)*0.5 + (state.confessionFailCount||0)*10);
   if(key==='分析力') return Math.min(100, (state.impassCount||0)*10);
   return Math.min(100, state.stats[key]||0);
 }
@@ -493,6 +518,10 @@ const QUESTS = [
   {name:'2回目デートOK',       desc:'相手から2回目の承諾を得たら押す(1回ごとにデート力+10、コミュ力+5、何度でも加算可能)', icon:'🌟', counter:true, countKey:'dateSecondCount', perClickReward:{デート力:10,コミュ力:5}},
   {name:'コミュ力 Lv.5 達成',  desc:'コミュスコア50以上を達成',      icon:'💫',xp:150, reward:{コミュ力:10,共感力:10}},
   {name:'デート力 Lv.5 達成',  desc:'デートスコア50以上を達成',      icon:'🗺️',xp:150, reward:{デート力:10,表現力:10}},
+  {name:'告白デート',          desc:'告白した結果を記録する(OK: デート力+50/コミュ力+20 ／ 失敗: 経験値+10)', icon:'💍', choice:true, infoKey:'confession', options:[
+    {key:'ok', label:'✅ OK！成功', countKey:'confessionOkCount', perClickReward:{デート力:50,コミュ力:20}},
+    {key:'fail', label:'😢 失敗', countKey:'confessionFailCount'},
+  ]},
   {name:'交際スタート',        desc:'パートナーと付き合い始める',     icon:'💑',xp:500, reward:{外見力:10,デート力:10,共感力:10,コミュ力:10}},
 ];
 
@@ -512,6 +541,8 @@ let state = {
   dateApoCount: 0,
   dateSuccessCount: 0,
   dateSecondCount: 0,
+  confessionOkCount: 0,
+  confessionFailCount: 0,
   dateLogs: [],
   myBirth: '',
 };
@@ -535,6 +566,8 @@ function normalizeState(s){
   if(typeof s.dateApoCount !== 'number') s.dateApoCount = 0;
   if(typeof s.dateSuccessCount !== 'number') s.dateSuccessCount = 0;
   if(typeof s.dateSecondCount !== 'number') s.dateSecondCount = 0;
+  if(typeof s.confessionOkCount !== 'number') s.confessionOkCount = 0;
+  if(typeof s.confessionFailCount !== 'number') s.confessionFailCount = 0;
   if(!Array.isArray(s.dateLogs)) s.dateLogs = [];
   if(typeof s.myBirth !== 'string') s.myBirth = '';
   if(typeof s.avatarIdx !== 'number') s.avatarIdx = 2;
@@ -711,10 +744,15 @@ function renderQuests(){
     const done = state.done.includes(i);
     const rewardTxt = q.reward ? Object.entries(q.reward).map(([k,v])=>`${k}+${v}`).join(' / ') : '';
     const div = document.createElement('div');
-    div.className = 'q-item' + (done?' done':'') + (q.multi||q.counter?' q-item-multi':'');
+    div.className = 'q-item' + (done?' done':'') + (q.multi||q.counter||q.choice?' q-item-multi':'');
     const checkedCount = q.multi ? (state.multiChecks[q.name]||[]).length : 0;
     let rewardLine;
-    if(q.counter){
+    if(q.choice){
+      rewardLine = `🎁 ${q.options.map(opt => opt.perClickReward
+        ? `${opt.label}: ${Object.entries(opt.perClickReward).map(([k,v])=>`${k}+${v}`).join('/')}`
+        : `${opt.label}: 経験値+10`
+      ).join(' ／ ')}`;
+    } else if(q.counter){
       const count = state[q.countKey]||0;
       if(q.perClickReward){
         rewardLine = `1回ごとに${Object.entries(q.perClickReward).map(([k,v])=>`${k}+${v}`).join('/')}（合計${count}回分）`;
@@ -735,14 +773,15 @@ function renderQuests(){
     div.innerHTML = `
       <span class="q-icon">${q.icon}</span>
       <div class="q-body">
-        <div class="q-name">${q.name}${q.multi?` <span class="q-multi-count">(${checkedCount}/${q.items.length})</span>`:''}${q.counter?` <span class="q-multi-count">(${state[q.countKey]||0}回)</span>`:''}</div>
+        <div class="q-name">${q.name}${q.multi?` <span class="q-multi-count">(${checkedCount}/${q.items.length})</span>`:''}${q.counter?` <span class="q-multi-count">(${state[q.countKey]||0}回)</span>`:''}${q.choice?` <span class="q-multi-count">(成功${state[q.options[0].countKey]||0}／失敗${state[q.options[1].countKey]||0})</span>`:''}${q.infoKey?` <button class="q-info-btn" onclick="event.stopPropagation();openInfoModal('${q.infoKey}')">📖 詳しく</button>`:''}</div>
         <div class="q-desc">${q.desc}</div>
         <div class="q-reward">${rewardLine}</div>
         ${q.multi? renderMultiChips(q) : ''}
         ${q.counter? `<div class="q-counter-ctrl"><button class="adj-btn" onclick="event.stopPropagation();adjCounter(${i},-1)">−</button><button class="adj-btn" onclick="event.stopPropagation();adjCounter(${i},1)">＋ ${q.name.includes('デート')?'デート決定！':'記録する'}</button></div>` : ''}
+        ${q.choice? `<div class="q-counter-ctrl">${q.options.map((opt,oi)=>`<button class="adj-btn" onclick="event.stopPropagation();adjChoice(${i},${oi},1)">${opt.label}</button><button class="adj-btn adj-btn-mini" onclick="event.stopPropagation();adjChoice(${i},${oi},-1)">−</button>`).join('')}</div>` : ''}
       </div>
-      ${(q.multi||q.counter)? '' : '<span class="q-check"></span>'}`;
-    if(!q.multi && !q.counter) div.onclick = () => toggleQuest(i);
+      ${(q.multi||q.counter||q.choice)? '' : '<span class="q-check"></span>'}`;
+    if(!q.multi && !q.counter && !q.choice) div.onclick = () => toggleQuest(i);
     c.appendChild(div);
   });
 }
@@ -764,6 +803,90 @@ function adjCounter(qi, delta){
   renderAll();
   const newLv = calcLv(totalXP());
   if(newLv > prevLv) showLevelUp(newLv);
+}
+
+// choice系クエスト(告白デートなど、結果によって報酬が分かれるもの)の±ボタン処理
+function adjChoice(qi, optIdx, delta){
+  const prevLv = calcLv(totalXP());
+  const opt = QUESTS[qi].options[optIdx];
+  state[opt.countKey] = Math.max(0, (state[opt.countKey]||0) + delta);
+  if(opt.perClickReward){
+    Object.entries(opt.perClickReward).forEach(([k,v])=>{
+      state.stats[k] = delta > 0
+        ? Math.min(100,(state.stats[k]||0)+v)
+        : Math.max(0,(state.stats[k]||0)-v);
+    });
+  }
+  // perClickRewardが無いoption(告白デートの「失敗」など)は経験値ステータス側の計算式で直接カウントを参照する
+  save();
+  renderAll();
+  const newLv = calcLv(totalXP());
+  if(newLv > prevLv) showLevelUp(newLv);
+}
+
+// クエストの補足ガイド(長文)をポップアップ表示する
+const QUEST_INFO = {
+  confession: {
+    title: '💍 告白デートのポイント',
+    body: `<b>恋愛がうまくいくパターンは5つ</b>
+1. 相手の自己肯定感を満たす
+2. 感情の共有・共感
+3. 脳幹錯誤を起こす(恋愛トーク)
+4. 好きの返報性(好きの仄かし)
+5. 単純接触頻度
+
+この5つが初回デートでできてしまえば、その日にお付き合いすることだってできます。
+
+<b>告白とは、一か八かではなく答え合わせ。</b>
+どのくらい会ったかではなく、どう過ごせたかが重要です。告白前の食事中に必ず出会った頃から今までのデートの振り返りトークをすること。女性はビジュアライズが得意だからこそ、回想させることで「回数」ではなく「どう過ごしたか」を連想させます(^-^)
+
+<b>告白前の10個のチェック</b>
+1. 下の名前でお互い呼び合っている
+2. 敬語がはずれている
+3. 感情に共感している(ネガポジ)
+4. 相手からも質問や共感はあるか
+5. 恋愛トーク
+6. 深い自己開示ができてる
+7. 内面を褒めている(存在を認めてる)
+8. 好きの仄めかしができている
+9. 手を握れる仲(OKもらえるか確信がない時のバロメーターになる)
+10. お互いのことを6割理解しているか
+
+この10個全て出来ていなかったとしても、8割出来てるなーって思うなら「答え合わせ」になります。
+
+<b>告白のシチュエーション</b>
+人気の少ないところ、薄暗い雰囲気の良いところ。お店の場合、席間隔が空いていること。
+※YESを言いやすい環境を作ることが大切
+
+<b>告白のタイミング</b>
+お持たせやプレゼントを贈る。足を止めることと話題を変えること。そして、渡した時に「ありがとう」の言葉が返ってきたら、そこがいざ告白のタイミングです。保留になることも想定しておくこと。保留されても会える環境を作っておくのが重要。告白前に次回のデートの約束(日程まで)を決めておくことがポイントです。
+
+<b>保留になる場合</b>
+1. 付き合うことの不安の解消ができていない
+2. お互いのことを深く話してない
+3. 感情の共感・感情の交換ができていない
+
+このどれかです。保留でもはっきり断られた(NG)わけではないので、あくまでも前向きに捉えること！これが大切です。
+
+内容はもっと深いですが、詳しくはコンサル時にお話しします！`
+  }
+};
+function openInfoModal(key){
+  const info = QUEST_INFO[key];
+  if(!info) return;
+  document.getElementById('infoModalTitle').textContent = info.title;
+  const escaped = info.body.split('\n').map(line => {
+    const m = line.match(/^<b>(.*)<\/b>$/);
+    return m ? `<b>${escapeInfoHtml(m[1])}</b>` : escapeInfoHtml(line);
+  }).join('\n');
+  document.getElementById('infoModalBody').innerHTML = escaped.replace(/\n/g, '<br>');
+  document.getElementById('infoModal').style.display = 'flex';
+}
+function escapeInfoHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function closeInfoModal(){
+  document.getElementById('infoModal').style.display = 'none';
 }
 
 // multi系クエスト用の項目名/リンクを取得するヘルパー(itemは文字列 or {label,url})
@@ -945,6 +1068,10 @@ function buildBookMarkdown(){
   QUESTS.forEach((q,i) => {
     if(q.counter){
       lines.push(`- ${q.name}: ${state[q.countKey]||0}回`);
+      return;
+    }
+    if(q.choice){
+      lines.push(`- ${q.name}: ${q.options.map(opt=>`${opt.label} ${state[opt.countKey]||0}回`).join(' / ')}`);
       return;
     }
     lines.push(`- [${state.done.includes(i)?'x':' '}] ${q.name}`);
