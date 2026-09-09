@@ -490,7 +490,7 @@ const QUESTS = [
   {name:'マッチングアプリ登録', desc:'アプリを始める第一歩',         icon:'📱',xp:50,  reward:{コミュ力:10}},
   {name:'デートアポクリア！',   desc:'デートへ誘ってOKされたら押す(1回ごとに+0.5XP、何度でも加算可能)', icon:'📅', counter:true, countKey:'dateApoCount', perClickXP:0.5},
   {name:'初デート成功',        desc:'デートするたびに押す(1回ごとにデート力+5、コミュ力+1、何度でも加算可能)', icon:'☕', counter:true, countKey:'dateSuccessCount', perClickReward:{デート力:5,コミュ力:1}},
-  {name:'2回目デートOK',       desc:'相手から2回目の承諾を得る',     icon:'🌟',xp:250, reward:{楽転力:20,デート力:15}},
+  {name:'2回目デートOK',       desc:'相手から2回目の承諾を得たら押す(1回ごとにデート力+10、コミュ力+5、何度でも加算可能)', icon:'🌟', counter:true, countKey:'dateSecondCount', perClickReward:{デート力:10,コミュ力:5}},
   {name:'コミュ力 Lv.5 達成',  desc:'コミュスコア50以上を達成',      icon:'💫',xp:150, reward:{コミュ力:10,共感力:10}},
   {name:'デート力 Lv.5 達成',  desc:'デートスコア50以上を達成',      icon:'🗺️',xp:150, reward:{デート力:10,表現力:10}},
   {name:'交際スタート',        desc:'パートナーと付き合い始める',     icon:'💑',xp:500, reward:{外見力:10,デート力:10,共感力:10,コミュ力:10}},
@@ -511,6 +511,7 @@ let state = {
   multiChecks: {},
   dateApoCount: 0,
   dateSuccessCount: 0,
+  dateSecondCount: 0,
   dateLogs: [],
   myBirth: '',
 };
@@ -533,6 +534,7 @@ function normalizeState(s){
   QUESTS.forEach(q => { if(q.multi && !Array.isArray(s.multiChecks[q.name])) s.multiChecks[q.name] = []; });
   if(typeof s.dateApoCount !== 'number') s.dateApoCount = 0;
   if(typeof s.dateSuccessCount !== 'number') s.dateSuccessCount = 0;
+  if(typeof s.dateSecondCount !== 'number') s.dateSecondCount = 0;
   if(!Array.isArray(s.dateLogs)) s.dateLogs = [];
   if(typeof s.myBirth !== 'string') s.myBirth = '';
   if(typeof s.avatarIdx !== 'number') s.avatarIdx = 2;
