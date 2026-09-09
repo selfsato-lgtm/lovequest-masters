@@ -468,15 +468,14 @@ const RADAR_STATS = [
 ];
 // レーダーチャートの外に置く追加の派生ステータス（分析力）
 const ANALYSIS_STAT = {key:'分析力', icon:'🧠', color:'#4A9EDB', desc:'インパス診断ツールの使用回数で上がる（自動計算）', derived:true};
-// マニュアル受講チェックリスト。チェックすると対象ステータスに+10（外すと-10）
+// LCIQマニュアル動画視聴チェックリスト。チェックすると対象ステータスに+10（外すと-10）。amount指定があればそれを使う
 const MANUAL_COURSES = [
   {key:'認識力', name:'LCIQ認識力向上マニュアル'},
   {key:'表現力', name:'表現力アップ講座'},
   {key:'楽転力', name:'楽転力（ポジティブ変換）講座'},
   {key:'共感力', name:'共感力向上講座'},
-  {key:'行動力', name:'行動力アップ講座'},
-  {key:'包容力', name:'包容力向上講座'},
   {key:'継続力', name:'継続力アップ講座'},
+  {key:'魅了力', name:'魅了力UP!動画講座', amount:30},
 ];
 // レーダーチャート対象外の追加ステータス
 const EXTRA_STATS = [
@@ -495,9 +494,11 @@ function statValue(key){
   if(key==='魅了力'){
     const src=['認識力','表現力','楽転力','共感力','行動力','包容力'];
     const avg = src.reduce((s,k)=>s+(state.stats[k]||0),0)/src.length;
-    // マニュアル受講チェックリストで上記6項目を受講済みなら追加ボーナス
+    // LCIQマニュアル動画視聴で上記6項目を受講済みなら追加ボーナス
     const checkedBonus = (state.manualDone||[]).filter(k=>src.includes(k)).length * 15;
-    return Math.min(100, Math.round(avg + checkedBonus));
+    // 「魅了力UP!動画講座」を視聴済みなら直接+30(この項目はチェックリスト内だがsrcの6項目とは別枠)
+    const videoBonus = (state.manualDone||[]).includes('魅了力') ? 30 : 0;
+    return Math.min(100, Math.round(avg + checkedBonus + videoBonus));
   }
   if(key==='経験値') return Math.min(100, Math.round(totalXP()/1600*100) + (state.mindmapCount||0)*5 + (state.impassCount||0)*5 + (state.dateLogs||[]).length*0.5 + (state.dateApoCount||0)*0.5 + (state.confessionFailCount||0)*10);
   if(key==='分析力') return Math.min(100, (state.impassCount||0)*10);
@@ -744,18 +745,19 @@ function renderStats(){
 
   const manualHeading = document.createElement('div');
   manualHeading.className = 'stats-sub-heading';
-  manualHeading.textContent = '📚 マニュアル受講チェックリスト（受講で+10）';
+  manualHeading.textContent = '📚 LCIQマニュアル動画視聴（受講でポイント加算）';
   c.appendChild(manualHeading);
 
   const manualList = document.createElement('div');
   manualList.className = 'manual-list';
   MANUAL_COURSES.forEach(m => {
     const checked = state.manualDone.includes(m.key);
+    const amount = m.amount || 10;
     const row = document.createElement('label');
     row.className = 'manual-row' + (checked ? ' done' : '');
     row.innerHTML = `<input type="checkbox" ${checked?'checked':''} onchange="toggleManual('${m.key}')">
       <span class="manual-name">${m.name}</span>
-      <span class="manual-target">→ ${m.key}</span>`;
+      <span class="manual-target">→ ${m.key}+${amount}</span>`;
     manualList.appendChild(row);
   });
   c.appendChild(manualList);
@@ -1007,13 +1009,15 @@ function adjImpass(delta){
   save(); renderStats(); renderOverall();
 }
 function toggleManual(key){
+  const course = MANUAL_COURSES.find(m => m.key === key);
+  const amount = (course && course.amount) || 10;
   const idx = state.manualDone.indexOf(key);
   if(idx >= 0){
     state.manualDone.splice(idx,1);
-    state.stats[key] = Math.max(0, (state.stats[key]||0) - 10);
+    if(!course || !course.amount) state.stats[key] = Math.max(0, (state.stats[key]||0) - amount);
   } else {
     state.manualDone.push(key);
-    state.stats[key] = Math.min(100, (state.stats[key]||0) + 10);
+    if(!course || !course.amount) state.stats[key] = Math.min(100, (state.stats[key]||0) + amount);
   }
   save(); renderStats(); renderOverall();
 }
@@ -1085,7 +1089,7 @@ function buildBookMarkdown(){
     lines.push(`- ${st.icon} ${st.key}: Lv.${statLv(state.stats[st.key]||0)}（${state.stats[st.key]||0}）`);
   });
   lines.push('');
-  lines.push(`## マニュアル受講チェックリスト`);
+  lines.push(`## LCIQマニュアル動画視聴`);
   MANUAL_COURSES.forEach(m => {
     lines.push(`- [${state.manualDone.includes(m.key)?'x':' '}] ${m.name}`);
   });
