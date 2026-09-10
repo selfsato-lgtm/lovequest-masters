@@ -15,6 +15,6 @@ export default async function handler(req, res) {
 
   const maxAgeSec = Math.max(0, Math.floor((payload.exp - Date.now()) / 1000));
   res.setHeader('Set-Cookie', `${SESSION_COOKIE_NAME}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAgeSec}`);
-  res.writeHead(302, { Location: '/dashboard.html' });
+  res.writeHead(302, { Location: '/index.html' });
   res.end();
 }
