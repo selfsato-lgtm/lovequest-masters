@@ -726,7 +726,7 @@ function renderStats(){
     }
     return `<div class="radar-legend-row">
       <span class="stat-name">${st.icon} ${st.key}</span>
-      <span class="stat-lv" style="color:${st.color}">Lv.${statLv(val)}</span>
+      <span class="stat-lv" style="color:${st.color}">Lv.${statLv(val)}（${val}点）</span>
       ${ctrl}
     </div>`;
   }).join('')}</div>`;
@@ -738,7 +738,7 @@ function renderStats(){
     const val = statValue(ANALYSIS_STAT.key);
     analysisRow.innerHTML = `
       <span class="stat-name">${ANALYSIS_STAT.icon} ${ANALYSIS_STAT.key}</span>
-      <span class="stat-lv" style="color:${ANALYSIS_STAT.color}">Lv.${statLv(val)}</span>
+      <span class="stat-lv" style="color:${ANALYSIS_STAT.color}">Lv.${statLv(val)}（${val}点）</span>
       <div class="stat-adj">
         <span class="impass-count">インパス${state.impassCount||0}回<button class="adj-btn adj-btn-mini" onclick="adjImpass(-1)">−</button><button class="adj-btn adj-btn-mini" onclick="adjImpass(1)">＋</button>（自動計測、誤カウント時は±で補正可）</span>
       </div>`;
@@ -758,7 +758,7 @@ function renderStats(){
     div.innerHTML = `
       <div class="stat-head">
         <span class="stat-name">${st.icon} ${st.key}</span>
-        <span class="stat-lv" style="color:${st.color}">Lv.${lv}</span>
+        <span class="stat-lv" style="color:${st.color}">Lv.${lv}（${val}点）</span>
       </div>
       <div class="stat-bar-bg">
         <div class="stat-bar-fill" style="width:${val}%;background:${st.color}"></div>
