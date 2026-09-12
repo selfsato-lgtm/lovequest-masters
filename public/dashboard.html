@@ -204,6 +204,10 @@ main{display:grid;grid-template-columns:180px 1fr 280px;gap:12px;
   padding:6px 9px;font-size:12px;color:var(--light);font-family:inherit}
 .datelog-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
   gap:10px;margin-top:14px}
+.dl-filter{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;margin-top:14px;padding:10px 12px;background:var(--card2);border:1px solid #2a2a4a;
+  border-radius:10px;align-items:end}
+.dl-filter-count{font-size:11px;color:var(--muted);margin:6px 2px 0}
 .dl-stepper{display:flex;align-items:center;gap:8px}
 .dl-step-btn{flex-shrink:0;width:28px;height:28px;border-radius:6px;border:1px solid #2a2a4a;
   background:var(--card2);color:var(--gold);font-size:14px;font-weight:900;cursor:pointer;line-height:1}
@@ -407,6 +411,25 @@ main{display:grid;grid-template-columns:180px 1fr 280px;gap:12px;
       </form>
 
       <div class="dl-summary" id="dl-summary"></div>
+
+      <div class="dl-filter">
+        <div class="dl-field"><label>タイプで絞り込み</label>
+          <select id="dlf-type" onchange="onDlFilterChange()"><option value="">すべて</option></select></div>
+        <div class="dl-field"><label>デート回数で絞り込み</label>
+          <select id="dlf-visit" onchange="onDlFilterChange()">
+            <option value="">すべて</option>
+            <option value="1">1回目</option>
+            <option value="2">2回目</option>
+            <option value="3">3回目</option>
+            <option value="4">4回目</option>
+            <option value="5">5回目</option>
+            <option value="6+">6回目以上</option>
+          </select></div>
+        <div class="dl-field dl-field-wide"><label>キーワード検索（名前・お店・会話内容など）</label>
+          <input type="text" id="dlf-q" placeholder="例: ○○さん／恵比寿／焼き鳥" oninput="onDlFilterChange()"></div>
+        <button type="button" class="dl-step-btn" onclick="clearDlFilters()">絞り込み解除</button>
+      </div>
+      <div class="dl-filter-count" id="dl-filter-count"></div>
 
       <div class="dl-table-wrap">
         <table class="dl-table" id="dl-table">
@@ -1376,14 +1399,53 @@ const DL_COLUMNS = [
   {field:'type', displayFn: e => dlEscapeHtml(typeLabelWithSub(e.type))},
   {field:'goal'}, {field:'talk'}, {field:'good'}, {field:'review'}, {field:'followup'},
 ];
+// ─── 絞り込み（タイプ／デート回数／キーワード） ───
+let dlFilters = { type: '', visit: '', q: '' };
+function onDlFilterChange(){
+  dlFilters = {
+    type: document.getElementById('dlf-type').value,
+    visit: document.getElementById('dlf-visit').value,
+    q: document.getElementById('dlf-q').value.trim().toLowerCase(),
+  };
+  renderDateLogs();
+}
+function clearDlFilters(){
+  document.getElementById('dlf-type').value = '';
+  document.getElementById('dlf-visit').value = '';
+  document.getElementById('dlf-q').value = '';
+  dlFilters = { type: '', visit: '', q: '' };
+  renderDateLogs();
+}
+function dlMatchesFilter(e){
+  if(dlFilters.type && e.type !== dlFilters.type) return false;
+  if(dlFilters.visit){
+    const n = parseInt(e.visitCount, 10);
+    const bucket = (!n || n < 1) ? null : (n >= 6 ? '6+' : String(n));
+    if(bucket !== dlFilters.visit) return false;
+  }
+  if(dlFilters.q){
+    const haystack = ['name','tool','outfit','shop','job','home','goal','talk','good','review','followup']
+      .map(f => e[f] || '').join(' ').toLowerCase();
+    if(!haystack.includes(dlFilters.q)) return false;
+  }
+  return true;
+}
 function renderDateLogs(){
   renderDateLogSummary();
   const tbody = document.getElementById('dl-tbody');
+  const countBox = document.getElementById('dl-filter-count');
+  const filtered = state.dateLogs.filter(dlMatchesFilter);
+  const isFiltered = dlFilters.type || dlFilters.visit || dlFilters.q;
+  countBox.textContent = isFiltered ? `絞り込み結果: ${filtered.length}件 / 全${state.dateLogs.length}件` : '';
   if(state.dateLogs.length === 0){
     tbody.innerHTML = `<tr><td colspan="${DL_COLUMNS.length+1}" class="dl-empty">まだデートログがありません。上のフォームから追加してください。</td></tr>`;
     return;
   }
-  tbody.innerHTML = [...state.dateLogs].reverse().map(e => {
+  if(filtered.length === 0){
+    tbody.innerHTML = `<tr><td colspan="${DL_COLUMNS.length+1}" class="dl-empty">条件に一致するデートログがありません。</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = [...filtered].reverse().map(e => {
     const cells = DL_COLUMNS.map(col => {
       if(col.displayFn){
         // 注釈（年齢差・タイプ副属性）が付くセルは表示専用。編集はフォームから行う
@@ -1395,12 +1457,14 @@ function renderDateLogs(){
   }).join('');
 }
 function populateDateLogTypeSelect(){
-  const sel = document.getElementById('dl-type');
-  AVATARS.forEach(av => {
-    const opt = document.createElement('option');
-    opt.value = av.name;
-    opt.textContent = `${av.name}（${av.sub}）`;
-    sel.appendChild(opt);
+  ['dl-type', 'dlf-type'].forEach(id => {
+    const sel = document.getElementById(id);
+    AVATARS.forEach(av => {
+      const opt = document.createElement('option');
+      opt.value = av.name;
+      opt.textContent = `${av.name}（${av.sub}）`;
+      sel.appendChild(opt);
+    });
   });
 }
 
