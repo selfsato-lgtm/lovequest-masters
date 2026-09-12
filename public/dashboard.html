@@ -241,6 +241,10 @@ main{display:grid;grid-template-columns:180px 1fr 280px;gap:12px;
   white-space:normal;overflow-wrap:break-word}
 .dl-table td[contenteditable="true"]:focus{outline:1px solid var(--gold);background:var(--card2)}
 .dl-table td.dl-readonly{color:var(--muted);cursor:default}
+/* 長文項目はスプレッドシートのように1行に圧縮し、はみ出た分は「…」表示（クリックで編集展開） */
+.dl-table td.dl-longtext{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.dl-table td.dl-longtext:focus{white-space:normal;overflow:visible;overflow-wrap:break-word;
+  max-width:320px;z-index:1;position:relative}
 .dl-del-btn{background:transparent;border:1px solid var(--red);color:var(--red);
   border-radius:6px;padding:3px 8px;font-size:10.5px;cursor:pointer}
 .dl-del-btn:hover{background:var(--red);color:var(--white)}
@@ -1400,7 +1404,8 @@ const DL_COLUMNS = [
   {field:'age', displayFn: e => e.age ? dlEscapeHtml(e.age) + dlEscapeHtml(ageDiffLabel(e.age)) : ''},
   {field:'job'}, {field:'home'},
   {field:'type', displayFn: e => dlEscapeHtml(typeLabelWithSub(e.type))},
-  {field:'goal'}, {field:'talk'}, {field:'good'}, {field:'review'}, {field:'followup'},
+  {field:'goal', long:true}, {field:'talk', long:true}, {field:'good', long:true},
+  {field:'review', long:true}, {field:'followup', long:true},
 ];
 // ─── 絞り込み（タイプ／デート回数／キーワード） ───
 let dlFilters = { type: '', visit: '', q: '' };
@@ -1454,7 +1459,10 @@ function renderDateLogs(){
         // 注釈（年齢差・タイプ副属性）が付くセルは表示専用。編集はフォームから行う
         return `<td class="dl-readonly" title="編集はフォームから行ってください">${col.displayFn(e)}</td>`;
       }
-      return `<td contenteditable="true" onblur="updateDateLogField(${e.id},'${col.field}',this.textContent)">${dlEscapeHtml(e[col.field])}</td>`;
+      // 長文項目(目標/会話/うまくいったこと/感想/やり取り)はスプレッドシートのように1行分だけ表示し、
+      // クリックして編集中(:focus)は展開する。全文はtitle属性のホバーで確認可能
+      const longClass = col.long ? ' class="dl-longtext"' : '';
+      return `<td${longClass} contenteditable="true" title="${dlEscapeHtml(e[col.field])}" onblur="updateDateLogField(${e.id},'${col.field}',this.textContent)">${dlEscapeHtml(e[col.field])}</td>`;
     }).join('');
     return `<tr>${cells}<td><button class="dl-del-btn" onclick="deleteDateLog(${e.id})">削除</button></td></tr>`;
   }).join('');
