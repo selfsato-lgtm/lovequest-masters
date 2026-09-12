@@ -533,7 +533,7 @@ function statValue(key){
     const seminarBonus = (state.multiChecks['魅了力向上セミナー']||[]).length * 5;
     return Math.min(100, Math.round(avg + checkedBonus + videoBonus + seminarBonus));
   }
-  if(key==='経験値') return Math.min(100, Math.round(totalXP()/1600*100) + (state.mindmapCount||0)*5 + (state.impassCount||0)*5 + (state.dateLogs||[]).length*0.5 + (state.dateApoCount||0)*0.5 + (state.confessionFailCount||0)*10);
+  if(key==='経験値') return Math.min(100, Math.round(totalXP()/1600*100) + (state.mindmapCount||0)*5 + (state.impassCount||0)*5 + (state.dateLogs||[]).length*1 + (state.dateApoCount||0)*0.5 + (state.confessionFailCount||0)*10);
   if(key==='分析力') return Math.min(100, (state.impassCount||0)*10);
   return Math.min(100, state.stats[key]||0);
 }
@@ -1364,12 +1364,14 @@ function addDateLog(){
   document.getElementById('dl-age-diff').textContent = '';
   document.getElementById('dl-tool-other-wrap').style.display = 'none';
   renderDateLogs();
+  renderStats(); renderOverall(); // 経験値(デートログ件数×1P)の表示に即反映させる
 }
 function deleteDateLog(id){
   if(!confirm('このデートログを削除しますか？')) return;
   state.dateLogs = state.dateLogs.filter(e => e.id !== id);
   save();
   renderDateLogs();
+  renderStats(); renderOverall();
 }
 function updateDateLogField(id, field, value){
   const entry = state.dateLogs.find(e => e.id === id);
