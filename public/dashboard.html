@@ -208,6 +208,9 @@ main{display:grid;grid-template-columns:180px 1fr 280px;gap:12px;
   gap:10px;margin-top:14px;padding:10px 12px;background:var(--card2);border:1px solid #2a2a4a;
   border-radius:10px;align-items:end}
 .dl-filter-count{font-size:11px;color:var(--muted);margin:6px 2px 0}
+.dl-filter-clear-btn{flex-shrink:0;height:32px;padding:0 14px;border-radius:6px;border:1px solid #2a2a4a;
+  background:var(--card2);color:var(--gold);font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.dl-filter-clear-btn:hover{border-color:var(--gold)}
 .dl-stepper{display:flex;align-items:center;gap:8px}
 .dl-step-btn{flex-shrink:0;width:28px;height:28px;border-radius:6px;border:1px solid #2a2a4a;
   background:var(--card2);color:var(--gold);font-size:14px;font-weight:900;cursor:pointer;line-height:1}
@@ -427,7 +430,7 @@ main{display:grid;grid-template-columns:180px 1fr 280px;gap:12px;
           </select></div>
         <div class="dl-field dl-field-wide"><label>キーワード検索（名前・お店・会話内容など）</label>
           <input type="text" id="dlf-q" placeholder="例: ○○さん／恵比寿／焼き鳥" oninput="onDlFilterChange()"></div>
-        <button type="button" class="dl-step-btn" onclick="clearDlFilters()">絞り込み解除</button>
+        <button type="button" class="dl-filter-clear-btn" onclick="clearDlFilters()">絞り込み解除</button>
       </div>
       <div class="dl-filter-count" id="dl-filter-count"></div>
 
