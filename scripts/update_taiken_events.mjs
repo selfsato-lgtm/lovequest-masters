@@ -11,19 +11,27 @@ const CATEGORIES = [
   { code: 'eg0120', label: '体験イベント・アクティビティ' },
   { code: 'eg0107', label: '美術展・博物展' },
 ];
-// 主要都市圏のみ対応(全47都道府県だと更新ジョブが長時間化するため)。
-// コードはウォーカープラスの地域コード(例: 東京都=ar0313)
+// 全47都道府県対応。コードはウォーカープラスの地域コード(例: 東京都=ar0313)
 const AREAS = [
   { code: 'ar0101', pref: '北海道' },
-  { code: 'ar0313', pref: '東京都' },
+  { code: 'ar0202', pref: '青森県' }, { code: 'ar0203', pref: '岩手県' }, { code: 'ar0204', pref: '宮城県' },
+  { code: 'ar0205', pref: '秋田県' }, { code: 'ar0206', pref: '山形県' }, { code: 'ar0207', pref: '福島県' },
+  { code: 'ar0308', pref: '茨城県' }, { code: 'ar0309', pref: '栃木県' }, { code: 'ar0310', pref: '群馬県' },
+  { code: 'ar0311', pref: '埼玉県' }, { code: 'ar0312', pref: '千葉県' }, { code: 'ar0313', pref: '東京都' },
   { code: 'ar0314', pref: '神奈川県' },
-  { code: 'ar0312', pref: '千葉県' },
-  { code: 'ar0311', pref: '埼玉県' },
-  { code: 'ar0623', pref: '愛知県' },
-  { code: 'ar0727', pref: '大阪府' },
-  { code: 'ar0726', pref: '京都府' },
-  { code: 'ar0728', pref: '兵庫県' },
-  { code: 'ar1040', pref: '福岡県' },
+  { code: 'ar0415', pref: '新潟県' }, { code: 'ar0419', pref: '山梨県' }, { code: 'ar0420', pref: '長野県' },
+  { code: 'ar0516', pref: '富山県' }, { code: 'ar0517', pref: '石川県' }, { code: 'ar0518', pref: '福井県' },
+  { code: 'ar0621', pref: '岐阜県' }, { code: 'ar0622', pref: '静岡県' }, { code: 'ar0623', pref: '愛知県' },
+  { code: 'ar0624', pref: '三重県' },
+  { code: 'ar0725', pref: '滋賀県' }, { code: 'ar0726', pref: '京都府' }, { code: 'ar0727', pref: '大阪府' },
+  { code: 'ar0728', pref: '兵庫県' }, { code: 'ar0729', pref: '奈良県' }, { code: 'ar0730', pref: '和歌山県' },
+  { code: 'ar0831', pref: '鳥取県' }, { code: 'ar0832', pref: '島根県' }, { code: 'ar0833', pref: '岡山県' },
+  { code: 'ar0834', pref: '広島県' }, { code: 'ar0835', pref: '山口県' },
+  { code: 'ar0936', pref: '徳島県' }, { code: 'ar0937', pref: '香川県' }, { code: 'ar0938', pref: '愛媛県' },
+  { code: 'ar0939', pref: '高知県' },
+  { code: 'ar1040', pref: '福岡県' }, { code: 'ar1041', pref: '佐賀県' }, { code: 'ar1042', pref: '長崎県' },
+  { code: 'ar1043', pref: '熊本県' }, { code: 'ar1044', pref: '大分県' }, { code: 'ar1045', pref: '宮崎県' },
+  { code: 'ar1046', pref: '鹿児島県' }, { code: 'ar1047', pref: '沖縄県' },
 ];
 const jst = new Date(Date.now() + 9 * 3600 * 1000);
 const todayStr = jst.toISOString().slice(0, 10);
