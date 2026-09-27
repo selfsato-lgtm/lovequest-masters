@@ -1,15 +1,29 @@
-// ウォーカープラスの「東京都×体験イベント・アクティビティ」一覧(公開ページ)から、
-// 今後数か月分のイベントを取得して data/taiken_events.json を更新する。APIキー不要・無料。
-// GitHub Actionsの週次ジョブから実行される。robots.txtで許可されている/event_list/のみを、少数のリクエストで取得する。
+// ウォーカープラスの都道府県別イベント一覧(公開ページ)から、今後数か月分の
+// 体験イベント・美術展を取得して data/taiken_events.json を更新する。APIキー不要・無料。
+// GitHub Actionsの週次ジョブから実行される。robots.txtで許可されている/event_list/のみを取得する。
 import { readFile, writeFile } from 'node:fs/promises';
 
 const OUT = 'public/data/taiken_events.json';
 const BASE = 'https://www.walkerplus.com';
 const MONTHS_AHEAD = 4;      // 今月を含めて何か月先まで
-const PAGES_PER_MONTH = 3;   // 1ページ10件 → カテゴリ・月あたり最大30件
+const PAGES_PER_MONTH = 3;   // 1ページ10件 → エリア・カテゴリ・月あたり最大30件
 const CATEGORIES = [
   { code: 'eg0120', label: '体験イベント・アクティビティ' },
   { code: 'eg0107', label: '美術展・博物展' },
+];
+// 主要都市圏のみ対応(全47都道府県だと更新ジョブが長時間化するため)。
+// コードはウォーカープラスの地域コード(例: 東京都=ar0313)
+const AREAS = [
+  { code: 'ar0101', pref: '北海道' },
+  { code: 'ar0313', pref: '東京都' },
+  { code: 'ar0314', pref: '神奈川県' },
+  { code: 'ar0312', pref: '千葉県' },
+  { code: 'ar0311', pref: '埼玉県' },
+  { code: 'ar0623', pref: '愛知県' },
+  { code: 'ar0727', pref: '大阪府' },
+  { code: 'ar0726', pref: '京都府' },
+  { code: 'ar0728', pref: '兵庫県' },
+  { code: 'ar1040', pref: '福岡県' },
 ];
 const jst = new Date(Date.now() + 9 * 3600 * 1000);
 const todayStr = jst.toISOString().slice(0, 10);
@@ -44,6 +58,8 @@ const RULES = [
   [/プラネタリウム|星空/, 'プラネタリウム', '並んで静かに楽しめる鉄板。上映後の感想シェアが会話のきっかけに。'],
   [/イルミネーション|ライトアップ|夜景|ナイト/, '夜', '夕方〜夜の待ち合わせと相性◎。防寒と歩きやすさを一言気遣うと好印象。'],
   [/ワークショップ|体験教室|手作り|陶芸|クラフト/, 'ワークショップ', '一緒に作る時間が会話を生む。トーク力に自信がなくても成立しやすい。'],
+  [/水族館/, '水族館', '幻想的な雰囲気で会話が弾みやすい定番デート。ナイト営業があれば夜デートにも。'],
+  [/動物園|サファリ/, '動物園', '動物を見ながら自然に会話が生まれる、初対面でも緊張しにくいデート。'],
   [/美術館|博物館|美術展|博物展/, '美術館', '静かに並んで鑑賞でき、感想の語り合いが自然な会話になる王道デート。'],
   [/展|ミュージアム|アート|美術/, '展示', '感想を語り合う価値観トークに発展しやすい。相手の好みを事前に確認して誘う。'],
   [/没入|イマーシブ|VR|デジタルアート|チームラボ/, '没入型', '非日常の刺激パート。終了後は落ち着いた店で余韻を共有すると好意に変換されやすい。'],
@@ -58,14 +74,15 @@ function enrich(title, summary, tags) {
   return { tags: [...out].slice(0, 3), dateTip: tip || '事前に相手の好みを聞いてから誘うと、共通点づくりになる。' };
 }
 
-function parseList(html) {
+function parseList(html, prefName) {
   const items = html.split('<li class="m-mainlist__item">').slice(1);
   return items.map(block => {
     const href = (block.match(/<a href="(\/event\/[^"]+)">\s*<span class="m-mainlist-item__ttl">([\s\S]*?)<\/span>/) || []);
     if (!href[1]) return null;
     const periodRaw = strip((block.match(/<p class="m-mainlist-item-event__period">([\s\S]*?)<\/p>/) || [, ''])[1]).replace(/^(開催中|終了間近|もうすぐ開催|開催予定)\s*/, '');
     const summary = strip((block.match(/class="m-mainlist-item__txt"[^>]*>([\s\S]*?)<\/a>/) || [, ''])[1]);
-    const places = [...block.matchAll(/class="m-mainlist-item__maplink"[^>]*>([\s\S]*?)<\/a>/g)].map(m => strip(m[1])).filter(p => p !== '東京都');
+    // 都道府県ページの一覧は maplink が [都道府県名, 市区町村名] の順で入る。都道府県名は area タブ側で別管理するのでここでは除く
+    const places = [...block.matchAll(/class="m-mainlist-item__maplink"[^>]*>([\s\S]*?)<\/a>/g)].map(m => strip(m[1])).filter(p => p !== prefName);
     const venue = strip((block.match(/class="m-mainlist-item-event__placelink"[^>]*>([\s\S]*?)<\/a>/) || [, ''])[1]);
     const tagText = [...block.matchAll(/m-mainlist-item__tagsitemlink"[^>]*>([\s\S]*?)<\/a>/g)].map(m => strip(m[1])).join(' ');
     const title = strip(href[2]);
@@ -73,27 +90,30 @@ function parseList(html) {
     const { tags, dateTip } = enrich(title, summary, tagText);
     return {
       id: 'wp-' + href[1].match(/e(\d+)/)?.[1], title,
-      area: [places[0], venue].filter(Boolean).join('／') || '東京都',
+      area: [places[0], venue].filter(Boolean).join('／') || prefName,
+      pref: prefName,
       start, end, summary, tags, dateTip, url: BASE + href[1], source: 'ウォーカープラス',
     };
   }).filter(Boolean);
 }
 
 const byId = new Map();
-for (const cat of CATEGORIES) {
-  for (let i = 0; i < MONTHS_AHEAD; i++) {
-    const d = new Date(Date.UTC(jst.getUTCFullYear(), jst.getUTCMonth() + i, 1));
-    const m = d.getUTCMonth() + 1;
-    for (let p = 1; p <= PAGES_PER_MONTH; p++) {
-      // 今月は月別ページが存在しないため、今日の日付(MMDD)の一覧を使う(開催中のイベントが一覧に出る)
-      const seg = i === 0 ? todayStr.slice(5).replace('-', '') : String(m);
-      const url = `${BASE}/event_list/${seg}/ar0313/${cat.code}/${p === 1 ? '' : p + '.html'}`;
-      try {
-        const list = parseList(await get(url));
-        list.forEach(e => byId.has(e.id) || byId.set(e.id, { ...e, category: cat.label }));
-        if (list.length < 10) break;
-      } catch (e) { console.error('取得失敗(スキップ):', cat.label, e.message); break; }
-      await sleep(1500); // 先方サーバーへの負荷を避ける
+for (const area of AREAS) {
+  for (const cat of CATEGORIES) {
+    for (let i = 0; i < MONTHS_AHEAD; i++) {
+      const d = new Date(Date.UTC(jst.getUTCFullYear(), jst.getUTCMonth() + i, 1));
+      const m = d.getUTCMonth() + 1;
+      for (let p = 1; p <= PAGES_PER_MONTH; p++) {
+        // 今月は月別ページが存在しないため、今日の日付(MMDD)の一覧を使う(開催中のイベントが一覧に出る)
+        const seg = i === 0 ? todayStr.slice(5).replace('-', '') : String(m);
+        const url = `${BASE}/event_list/${seg}/${area.code}/${cat.code}/${p === 1 ? '' : p + '.html'}`;
+        try {
+          const list = parseList(await get(url), area.pref);
+          list.forEach(e => byId.has(e.id) || byId.set(e.id, { ...e, category: cat.label }));
+          if (list.length < 10) break;
+        } catch (e) { console.error('取得失敗(スキップ):', area.pref, cat.label, e.message); break; }
+        await sleep(1200); // 先方サーバーへの負荷を避ける
+      }
     }
   }
 }

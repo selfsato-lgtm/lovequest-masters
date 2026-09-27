@@ -18,6 +18,10 @@ header{padding:14px 16px;background:linear-gradient(135deg,#1a1a35,#2a1a4a);bord
 header h1{font-size:17px;color:var(--white)}
 header p{font-size:11.5px;color:var(--muted);margin-top:4px}
 .wrap{max-width:900px;margin:0 auto;padding:12px}
+.areaRow{margin-top:10px}
+.areaRow select{width:100%;padding:9px 12px;border-radius:12px;border:1px solid #2a2a4a;background:var(--card);
+  color:var(--light);font-size:13px;font-family:inherit}
+.areaRow select:focus{outline:none;border-color:var(--gold)}
 .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}
 .tab{flex-shrink:0;padding:8px 14px;border-radius:18px;border:1px solid #2a2a4a;background:var(--card);
   color:var(--light);font-size:12.5px;cursor:pointer;font-family:inherit}
@@ -56,6 +60,7 @@ footer{text-align:center;font-size:11px;color:var(--muted);padding:16px}
   <p>デートに使える体験型イベントを月ごとにキュレーション。ウォーカープラスの一覧から毎週自動で最新化されます。</p>
 </header>
 <div class="wrap">
+  <div class="areaRow"><select id="area" onchange="setArea(this.value)"></select></div>
   <div class="tabs" id="tabs"></div>
   <div class="search"><input type="text" id="q" placeholder="🔍 キーワードで絞り込み（例: 謎解き／上野／夜景）" oninput="setQuery(this.value)"></div>
   <div class="tags" id="tags"></div>
@@ -69,6 +74,9 @@ let DATA = { events: [] };
 let curMonth = null;   // 'YYYY-MM'
 let curTag = '';
 let curQuery = '';
+let curArea = '';
+function loadSavedArea(){ try{ return localStorage.getItem('taikenArea') || ''; }catch(e){ return ''; } }
+function saveArea(v){ try{ localStorage.setItem('taikenArea', v); }catch(e){} }
 
 const today = new Date(); today.setHours(0,0,0,0);
 const ymd = d => new Date(d + 'T00:00:00');
@@ -107,16 +115,26 @@ function renderTags(list){
       all.map(t => `<button class="tag ${curTag===t?'on':''}" onclick="setTag('${esc(t)}')">${esc(t)}</button>`).join('')
     : '';
 }
+function renderAreaSelect(){
+  const prefs = [...new Set(DATA.events.map(e => e.pref).filter(Boolean))];
+  // 東京都を先頭に、あとは件数順で並べる
+  const counts = {}; DATA.events.forEach(e => counts[e.pref] = (counts[e.pref]||0)+1);
+  prefs.sort((a,b) => a==='東京都' ? -1 : b==='東京都' ? 1 : counts[b]-counts[a]);
+  if(!curArea || !prefs.includes(curArea)) curArea = prefs.includes('東京都') ? '東京都' : (prefs[0] || '');
+  document.getElementById('area').innerHTML = prefs.map(p =>
+    `<option value="${esc(p)}" ${p===curArea?'selected':''}>${esc(p)}（${counts[p]}件）</option>`).join('');
+}
 function render(){
+  renderAreaSelect();
   const mStart = MONTHS.find(m => monthKey(m) === curMonth) || MONTHS[0];
-  const inMonth = DATA.events.filter(e => overlaps(e, mStart));
+  const inMonth = DATA.events.filter(e => e.pref === curArea && overlaps(e, mStart));
   renderTabs(); renderTags(inMonth);
   let shown = curTag ? inMonth.filter(e => (e.tags||[]).includes(curTag)) : inMonth;
   const q = curQuery.trim().toLowerCase();
   if(q) shown = shown.filter(e => [e.title, e.area, e.summary, ...(e.tags||[])].join(' ').toLowerCase().includes(q));
   shown.sort((a,b) => (a.end||'9999') < (b.end||'9999') ? -1 : 1);
   document.getElementById('meta').textContent =
-    `${mStart.getMonth()+1}月に楽しめるイベント: ${shown.length}件` + (DATA.updatedAt ? `／最終更新 ${DATA.updatedAt}` : '');
+    `${esc(curArea)}・${mStart.getMonth()+1}月に楽しめるイベント: ${shown.length}件` + (DATA.updatedAt ? `／最終更新 ${DATA.updatedAt}` : '');
   document.getElementById('list').innerHTML = shown.length ? shown.map(e => {
     const left = daysLeft(e);
     const ending = left !== null && left <= 14 ? `<span class="ending">（あと${left}日で終了）</span>` : '';
@@ -134,8 +152,10 @@ function render(){
 function setMonth(k){ curMonth = k; curTag = ''; render(); }
 function setTag(t){ curTag = t; render(); }
 function setQuery(v){ curQuery = v; render(); }
+function setArea(v){ curArea = v; curTag = ''; saveArea(v); render(); }
 
 curMonth = monthKey(MONTHS[0]);
+curArea = loadSavedArea();
 fetch('data/taiken_events.json?t=' + Date.now())
   .then(r => r.json())
   .then(d => { DATA = d; render(); })
