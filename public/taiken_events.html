@@ -75,7 +75,8 @@ let curMonth = null;   // 'YYYY-MM'
 let curTag = '';
 let curQuery = '';
 let curArea = '';
-function loadSavedArea(){ try{ return localStorage.getItem('taikenArea') || ''; }catch(e){ return ''; } }
+// null = 未選択(初回訪問、東京都をデフォルトにする)。''は「全国」を明示的に選んだ状態として区別する
+function loadSavedArea(){ try{ return localStorage.getItem('taikenArea'); }catch(e){ return null; } }
 function saveArea(v){ try{ localStorage.setItem('taikenArea', v); }catch(e){} }
 
 const today = new Date(); today.setHours(0,0,0,0);
@@ -117,31 +118,34 @@ function renderTags(list){
 }
 function renderAreaSelect(){
   const prefs = [...new Set(DATA.events.map(e => e.pref).filter(Boolean))];
-  // 東京都を先頭に、あとは件数順で並べる
+  // 東京都を先頭に、あとは件数順で並べる（「全国」は別途先頭固定）
   const counts = {}; DATA.events.forEach(e => counts[e.pref] = (counts[e.pref]||0)+1);
   prefs.sort((a,b) => a==='東京都' ? -1 : b==='東京都' ? 1 : counts[b]-counts[a]);
-  if(!curArea || !prefs.includes(curArea)) curArea = prefs.includes('東京都') ? '東京都' : (prefs[0] || '');
-  document.getElementById('area').innerHTML = prefs.map(p =>
+  const validValues = ['', ...prefs];
+  if(!validValues.includes(curArea)) curArea = prefs.includes('東京都') ? '東京都' : (prefs[0] || '');
+  const allOpt = `<option value="" ${curArea===''?'selected':''}>🇯🇵 全国（${DATA.events.length}件）</option>`;
+  document.getElementById('area').innerHTML = allOpt + prefs.map(p =>
     `<option value="${esc(p)}" ${p===curArea?'selected':''}>${esc(p)}（${counts[p]}件）</option>`).join('');
 }
 function render(){
   renderAreaSelect();
   const mStart = MONTHS.find(m => monthKey(m) === curMonth) || MONTHS[0];
-  const inMonth = DATA.events.filter(e => e.pref === curArea && overlaps(e, mStart));
+  const inMonth = DATA.events.filter(e => (curArea === '' || e.pref === curArea) && overlaps(e, mStart));
   renderTabs(); renderTags(inMonth);
   let shown = curTag ? inMonth.filter(e => (e.tags||[]).includes(curTag)) : inMonth;
   const q = curQuery.trim().toLowerCase();
   if(q) shown = shown.filter(e => [e.title, e.area, e.summary, ...(e.tags||[])].join(' ').toLowerCase().includes(q));
   shown.sort((a,b) => (a.end||'9999') < (b.end||'9999') ? -1 : 1);
   document.getElementById('meta').textContent =
-    `${esc(curArea)}・${mStart.getMonth()+1}月に楽しめるイベント: ${shown.length}件` + (DATA.updatedAt ? `／最終更新 ${DATA.updatedAt}` : '');
+    `${curArea || '全国'}・${mStart.getMonth()+1}月に楽しめるイベント: ${shown.length}件` + (DATA.updatedAt ? `／最終更新 ${DATA.updatedAt}` : '');
   document.getElementById('list').innerHTML = shown.length ? shown.map(e => {
     const left = daysLeft(e);
     const ending = left !== null && left <= 14 ? `<span class="ending">（あと${left}日で終了）</span>` : '';
+    const areaLabel = curArea === '' && e.pref && e.area !== e.pref ? `${e.pref}／${e.area}` : e.area;
     return `<div class="ev">
       <div class="when">${esc(periodLabel(e))} ${ending}</div>
       <h3>${esc(e.title)}</h3>
-      <div class="area">📍 ${esc(e.area)}</div>
+      <div class="area">📍 ${esc(areaLabel)}</div>
       <div class="sum">${esc(e.summary)}</div>
       ${e.dateTip ? `<div class="tip">💡 ${esc(e.dateTip)}</div>` : ''}
       <div class="chips">${(e.tags||[]).map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div>
