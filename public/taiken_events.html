@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>体験型デート 月別イベント|恋愛式学</title>
+<link rel="icon" href="assets/icon.png">
+<style>
+:root{ --bg:#0D0D1A; --card:#1A1A35; --card2:#12122A; --gold:#F5A623; --red:#E94560;
+  --blue:#4A9EDB; --green:#4CAF73; --purple:#7B5EA7; --white:#fff; --light:#E0E0E0; --muted:#8888AA; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Yu Gothic UI','Hiragino Sans','Meiryo',sans-serif;background:var(--bg);color:var(--light);
+  font-size:13px;line-height:1.6;padding-bottom:40px}
+header{padding:14px 16px;background:linear-gradient(135deg,#1a1a35,#2a1a4a);border-bottom:1px solid #2a2a4a}
+.portal-back{display:inline-block;margin-bottom:8px;font-size:11.5px;color:#cdd;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.25);padding:5px 12px;border-radius:16px;text-decoration:none}
+header h1{font-size:17px;color:var(--white)}
+header p{font-size:11.5px;color:var(--muted);margin-top:4px}
+.wrap{max-width:900px;margin:0 auto;padding:12px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}
+.tab{flex-shrink:0;padding:8px 14px;border-radius:18px;border:1px solid #2a2a4a;background:var(--card);
+  color:var(--light);font-size:12.5px;cursor:pointer;font-family:inherit}
+.tab.on{background:var(--gold);color:#0D0D1A;border-color:var(--gold);font-weight:900}
+.search{margin:10px 0}
+.search input{width:100%;padding:9px 12px;border-radius:12px;border:1px solid #2a2a4a;background:var(--card);
+  color:var(--light);font-size:13px;font-family:inherit}
+.search input::placeholder{color:var(--muted)}
+.search input:focus{outline:none;border-color:var(--gold)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.tag{padding:4px 10px;border-radius:14px;border:1px solid #2a2a4a;background:var(--card2);color:var(--muted);
+  font-size:11px;cursor:pointer;font-family:inherit}
+.tag.on{border-color:var(--gold);color:var(--gold)}
+.meta{font-size:11px;color:var(--muted);margin:4px 2px 10px}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.ev{background:var(--card);border:1px solid #2a2a4a;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.ev h3{font-size:13.5px;color:var(--white);line-height:1.45}
+.ev .when{font-size:11.5px;color:var(--gold);font-weight:700}
+.ev .area{font-size:11.5px;color:var(--blue)}
+.ev .sum{font-size:12px}
+.ev .tip{font-size:11.5px;color:var(--green);background:rgba(76,175,115,.08);border-radius:8px;padding:6px 8px}
+.ev .chips{display:flex;flex-wrap:wrap;gap:4px}
+.ev .chip{font-size:10.5px;padding:2px 8px;border-radius:10px;background:var(--card2);color:var(--muted)}
+.ev a.go{margin-top:auto;align-self:flex-start;font-size:11.5px;color:var(--gold);text-decoration:none;
+  border:1px solid var(--gold);padding:5px 12px;border-radius:14px}
+.ev a.go:hover{background:var(--gold);color:#0D0D1A}
+.ending{color:var(--red)!important}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+footer{text-align:center;font-size:11px;color:var(--muted);padding:16px}
+</style>
+</head>
+<body>
+<header>
+  <a class="portal-back" href="index.html" onclick="location.href='index.html?t='+Date.now();return false;">← ポータルへ戻る</a>
+  <h1>🎡 体験型デート 月別イベント</h1>
+  <p>デートに使える体験型イベントを月ごとにキュレーション。ウォーカープラスの一覧から毎週自動で最新化されます。</p>
+</header>
+<div class="wrap">
+  <div class="tabs" id="tabs"></div>
+  <div class="search"><input type="text" id="q" placeholder="🔍 キーワードで絞り込み（例: 謎解き／上野／夜景）" oninput="setQuery(this.value)"></div>
+  <div class="tags" id="tags"></div>
+  <div class="meta" id="meta"></div>
+  <div class="list" id="list"></div>
+</div>
+<footer>掲載情報は変更・中止の可能性があります。お出かけ前に必ず公式サイトで最新情報をご確認ください。</footer>
+<script>
+const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+let DATA = { events: [] };
+let curMonth = null;   // 'YYYY-MM'
+let curTag = '';
+let curQuery = '';
+
+const today = new Date(); today.setHours(0,0,0,0);
+const ymd = d => new Date(d + 'T00:00:00');
+const monthKey = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+
+// 今日から6か月分のタブ(常に「今月」から始まる=自動で最新の月に追従)
+const MONTHS = Array.from({length:6}, (_,i) => new Date(today.getFullYear(), today.getMonth()+i, 1));
+
+function overlaps(ev, mStart){
+  const mEnd = new Date(mStart.getFullYear(), mStart.getMonth()+1, 0);
+  const s = ev.start ? ymd(ev.start) : new Date(2000,0,1);
+  const e = ev.end ? ymd(ev.end) : new Date(2999,0,1);
+  const from = mStart < today ? today : mStart;   // 終了済みの日は除外
+  return s <= mEnd && e >= from;
+}
+function periodLabel(ev){
+  const f = d => { const x = ymd(d); return (x.getMonth()+1) + '/' + x.getDate(); };
+  if(ev.start && ev.end) return f(ev.start) + ' 〜 ' + f(ev.end);
+  if(ev.start) return f(ev.start) + ' 〜 (終了未定)';
+  return '開催中';
+}
+function daysLeft(ev){
+  if(!ev.end) return null;
+  return Math.ceil((ymd(ev.end) - today) / 86400000);
+}
+function renderTabs(){
+  document.getElementById('tabs').innerHTML = MONTHS.map(m => {
+    const k = monthKey(m);
+    return `<button class="tab ${k===curMonth?'on':''}" onclick="setMonth('${k}')">${m.getMonth()+1}月</button>`;
+  }).join('');
+}
+function renderTags(list){
+  const all = [...new Set(list.flatMap(e => e.tags || []))].sort();
+  document.getElementById('tags').innerHTML = all.length
+    ? `<button class="tag ${curTag===''?'on':''}" onclick="setTag('')">すべて</button>` +
+      all.map(t => `<button class="tag ${curTag===t?'on':''}" onclick="setTag('${esc(t)}')">${esc(t)}</button>`).join('')
+    : '';
+}
+function render(){
+  const mStart = MONTHS.find(m => monthKey(m) === curMonth) || MONTHS[0];
+  const inMonth = DATA.events.filter(e => overlaps(e, mStart));
+  renderTabs(); renderTags(inMonth);
+  let shown = curTag ? inMonth.filter(e => (e.tags||[]).includes(curTag)) : inMonth;
+  const q = curQuery.trim().toLowerCase();
+  if(q) shown = shown.filter(e => [e.title, e.area, e.summary, ...(e.tags||[])].join(' ').toLowerCase().includes(q));
+  shown.sort((a,b) => (a.end||'9999') < (b.end||'9999') ? -1 : 1);
+  document.getElementById('meta').textContent =
+    `${mStart.getMonth()+1}月に楽しめるイベント: ${shown.length}件` + (DATA.updatedAt ? `／最終更新 ${DATA.updatedAt}` : '');
+  document.getElementById('list').innerHTML = shown.length ? shown.map(e => {
+    const left = daysLeft(e);
+    const ending = left !== null && left <= 14 ? `<span class="ending">（あと${left}日で終了）</span>` : '';
+    return `<div class="ev">
+      <div class="when">${esc(periodLabel(e))} ${ending}</div>
+      <h3>${esc(e.title)}</h3>
+      <div class="area">📍 ${esc(e.area)}</div>
+      <div class="sum">${esc(e.summary)}</div>
+      ${e.dateTip ? `<div class="tip">💡 ${esc(e.dateTip)}</div>` : ''}
+      <div class="chips">${(e.tags||[]).map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div>
+      <a class="go" href="${esc(e.url)}" target="_blank" rel="noopener">詳細を見る（${esc(e.source||'公式')}）→</a>
+    </div>`;
+  }).join('') : `<div class="empty">${q || curTag ? '条件に一致するイベントが見つかりませんでした。' : 'この月に該当するイベントはまだありません。'}</div>`;
+}
+function setMonth(k){ curMonth = k; curTag = ''; render(); }
+function setTag(t){ curTag = t; render(); }
+function setQuery(v){ curQuery = v; render(); }
+
+curMonth = monthKey(MONTHS[0]);
+fetch('data/taiken_events.json?t=' + Date.now())
+  .then(r => r.json())
+  .then(d => { DATA = d; render(); })
+  .catch(() => { document.getElementById('list').innerHTML = '<div class="empty">イベント情報を読み込めませんでした。</div>'; });
+</script>
+</body>
+</html>

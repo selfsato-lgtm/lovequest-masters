@@ -1,0 +1,29 @@
+name: 体験型デートイベントの自動更新
+
+on:
+  schedule:
+    - cron: '0 21 * * 0'   # 毎週月曜 06:00 JST
+  workflow_dispatch:        # 手動実行も可能
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: ウォーカープラスの一覧からイベントを更新(APIキー不要)
+        run: node scripts/update_taiken_events.mjs
+      - name: 変更があればコミット
+        run: |
+          if [ -n "$(git status --porcelain data/taiken_events.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/taiken_events.json
+            git commit -m "体験型デートイベントを自動更新"
+            git push
+          fi

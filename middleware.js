@@ -15,6 +15,7 @@ export const config = {
     '/type_diagnosis_flowchart.html',
     '/spells_33.html',
     '/ai_johnny.html',
+    '/taiken_events.html',
   ],
 };
 
