@@ -435,6 +435,7 @@ main{display:grid;grid-template-columns:180px 1fr 280px;gap:12px;
         <div class="dl-field dl-field-wide"><label>キーワード検索（名前・お店・会話内容など）</label>
           <input type="text" id="dlf-q" placeholder="例: ○○さん／恵比寿／焼き鳥" oninput="onDlFilterChange()"></div>
         <button type="button" class="dl-filter-clear-btn" onclick="clearDlFilters()">絞り込み解除</button>
+        <button type="button" class="dl-filter-clear-btn" onclick="exportDateLogsCsv()">📤 CSV出力</button>
       </div>
       <div class="dl-filter-count" id="dl-filter-count"></div>
 
@@ -1400,14 +1401,17 @@ function typeLabelWithSub(name){
 }
 // テーブル列の並び（datetimeと削除ボタンを除く、表示用の加工が必要な列は displayFn を持つ）
 const DL_COLUMNS = [
-  {field:'datetime'}, {field:'name'}, {field:'tool'}, {field:'outfit'}, {field:'shop'},
-  {field:'cost', displayFn: e => e.cost ? dlEscapeHtml((parseInt(e.cost,10)||0).toLocaleString('ja-JP')) + '円' : ''},
-  {field:'visitCount'},
-  {field:'age', displayFn: e => e.age ? dlEscapeHtml(e.age) + dlEscapeHtml(ageDiffLabel(e.age)) : ''},
-  {field:'job'}, {field:'home'},
-  {field:'type', displayFn: e => dlEscapeHtml(typeLabelWithSub(e.type))},
-  {field:'goal', long:true}, {field:'talk', long:true}, {field:'good', long:true},
-  {field:'review', long:true}, {field:'followup', long:true},
+  {field:'datetime', label:'日時'}, {field:'name', label:'名前'}, {field:'tool', label:'きっかけ'},
+  {field:'outfit', label:'服装'}, {field:'shop', label:'お店'},
+  {field:'cost', label:'金額', displayFn: e => e.cost ? dlEscapeHtml((parseInt(e.cost,10)||0).toLocaleString('ja-JP')) + '円' : '',
+   csvFn: e => e.cost ? (parseInt(e.cost,10)||0) + '円' : ''},
+  {field:'visitCount', label:'回数'},
+  {field:'age', label:'年齢', displayFn: e => e.age ? dlEscapeHtml(e.age) + dlEscapeHtml(ageDiffLabel(e.age)) : '',
+   csvFn: e => e.age ? e.age + ageDiffLabel(e.age) : ''},
+  {field:'job', label:'職業'}, {field:'home', label:'住まい'},
+  {field:'type', label:'タイプ', displayFn: e => dlEscapeHtml(typeLabelWithSub(e.type)), csvFn: e => typeLabelWithSub(e.type)},
+  {field:'goal', label:'目標', long:true}, {field:'talk', label:'会話', long:true}, {field:'good', label:'うまくいったこと', long:true},
+  {field:'review', label:'感想・改善点', long:true}, {field:'followup', label:'その後のやり取り/次回約束', long:true},
 ];
 // ─── 絞り込み（タイプ／デート回数／キーワード） ───
 let dlFilters = { type: '', visit: '', q: '' };
@@ -1439,6 +1443,32 @@ function dlMatchesFilter(e){
     if(!haystack.includes(dlFilters.q)) return false;
   }
   return true;
+}
+// ─── デートログのCSV出力（絞り込み中はその結果のみ、Excel/Googleスプレッドシートどちらでも開けるようUTF-8 BOM付き） ───
+function csvEscape(v){
+  const s = String(v ?? '');
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}
+function exportDateLogsCsv(){
+  const rows = state.dateLogs.filter(dlMatchesFilter);
+  if(rows.length === 0){ alert('出力対象のデートログがありません。'); return; }
+  const header = DL_COLUMNS.map(col => col.label);
+  const lines = [header.map(csvEscape).join(',')];
+  rows.forEach(e => {
+    const cells = DL_COLUMNS.map(col => csvEscape(col.csvFn ? col.csvFn(e) : (e[col.field] ?? '')));
+    lines.push(cells.join(','));
+  });
+  const csv = '﻿' + lines.join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `デートログ_${stamp}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 function renderDateLogs(){
   renderDateLogSummary();
