@@ -1,0 +1,48 @@
+name: 開発環境から本番環境へ自動同期
+
+# 開発環境(selfsato-lgtm/love-quest)の更新を、約10分おきに本番環境(このリポジトリ)へ取り込む。
+# 開発環境は公開リポジトリなのでトークン不要。コミットすると、Vercelが自動でデプロイする。
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-from-dev
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 本番環境をチェックアウト
+        uses: actions/checkout@v4
+
+      - name: 開発環境をチェックアウト
+        uses: actions/checkout@v4
+        with:
+          repository: selfsato-lgtm/love-quest
+          ref: main
+          path: _dev
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 同期(開発→本番)
+        run: node scripts/sync_from_dev.mjs _dev
+
+      - name: 変更があればコミット
+        run: |
+          if [ -n "$(git status --porcelain public)" ]; then
+            DEV_SHA=$(git -C _dev rev-parse --short HEAD)
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add public
+            git commit -m "開発環境(${DEV_SHA})から自動同期" -m "$(cat .sync_changed.txt)"
+            git pull --rebase -q
+            git push
+          fi

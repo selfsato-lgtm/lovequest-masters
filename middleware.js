@@ -4,20 +4,18 @@
 import { verifySessionToken, SESSION_COOKIE_NAME } from './lib/session.js';
 import { isActiveMember } from './lib/membership.js';
 
+// デフォルト拒否: index.html(ポータル)以外のHTMLは、全てログイン必須にする。
+// 開発環境→本番環境の自動同期(scripts/sync_from_dev.mjs)で新しいページが追加されても、
+// 個別にここへ追記しなくても未ログインで見えてしまわないようにするため。
 export const config = {
-  matcher: [
-    '/dashboard.html',
-    '/player_encyclopedia.html',
-    '/compatibility_library.html',
-    '/impass.html',
-    '/aisho.html',
-    '/training.html',
-    '/type_diagnosis_flowchart.html',
-    '/spells_33.html',
-    '/ai_johnny.html',
-    '/taiken_events.html',
-  ],
+  matcher: '/:path*',
 };
+
+function requiresLogin(pathname) {
+  const p = pathname.toLowerCase();
+  if (!/\.html?$/.test(p)) return false;      // HTML以外(画像・API・JSON等)は対象外
+  return p !== '/index.html' && p !== '/index.htm';
+}
 
 function getCookie(request, name) {
   const raw = request.headers.get('cookie') || '';
@@ -27,6 +25,7 @@ function getCookie(request, name) {
 
 export default async function middleware(request) {
   const url = new URL(request.url);
+  if (!requiresLogin(url.pathname)) return undefined;
   const sessionSecret = process.env.SESSION_SECRET;
 
   const token = getCookie(request, SESSION_COOKIE_NAME);
