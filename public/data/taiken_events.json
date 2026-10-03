@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-09-28",
-  "note": "SYNC-TEST(同期テスト用。自動で元に戻ります)",
+  "note": "初期データ(ウォーカープラス東京都の体験イベント一覧より)。以降は.github/workflows/update-taiken-events.ymlが毎週自動で更新する。",
   "events": [
     {
       "id": "wp-603603",
